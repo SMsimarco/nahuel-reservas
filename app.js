@@ -94,9 +94,23 @@ function renderDays(){
 }
 
 /* ── GRID ─────────────────────────────────────────── */
-function isBooked(court,time,date){
-  return bookings.some(b=>b.court===court&&b.time===time&&b.date===fmt(date)&&b.sport===currentSport);
+function isBooked(court, time, date){
+  const booked = bookings.some(b =>
+    b.court === court && b.time === time &&
+    b.date === fmt(date) && b.sport === currentSport
+  );
+  if(booked) return true;
+
+  // Chequear bloqueos del admin
+  try {
+    const blocks = JSON.parse(localStorage.getItem('nahuel_blocks') || '[]');
+    return blocks.some(b =>
+      b.court === court && b.time === time &&
+      b.date === fmt(date) && b.sport === currentSport
+    );
+  } catch(e) { return false; }
 }
+
 function isPastSlot(time,date){
   if(fmt(date)>today()) return false;
   if(fmt(date)<today()) return true;
