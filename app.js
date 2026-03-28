@@ -149,6 +149,7 @@ function openForm(court,time){
 
   document.getElementById('inp-name').value  = '';
   document.getElementById('inp-phone').value = '';
+  document.getElementById('inp-email').value = '';
   document.getElementById('btn-confirm').disabled = true;
   goTo('view-form');
 }
@@ -162,7 +163,9 @@ function checkForm(){
 function confirmBooking(){
   const name  = document.getElementById('inp-name').value.trim();
   const phone = document.getElementById('inp-phone').value.trim();
-  if(!name||!phone) return;
+  const email = document.getElementById('inp-email').value.trim();
+
+  if(!name||!phone||!email) return;
 
   const bk = {
     id: Date.now().toString(),
@@ -170,7 +173,7 @@ function confirmBooking(){
     court:  pendingSlot.court,
     time:   pendingSlot.time,
     date:   fmt(selectedDate),
-    name, phone
+    name, phone, email
   };
   bookings.push(bk);
   save();
@@ -181,9 +184,10 @@ function confirmBooking(){
 function renderConfirm(bk){
   const s  = SPORTS[bk.sport];
   const dt = new Date(bk.date+'T12:00:00').toLocaleDateString('es-AR',{weekday:'long',day:'numeric',month:'long'});
+  const rows = [['Titular',bk.name],['Deporte',s.name],['Cancha',bk.court],['Fecha',dt],['Horario',`${bk.time} · ${s.duration} min`],['Teléfono',bk.phone]];
+  if(bk.email) rows.push(['Email', bk.email]);
   document.getElementById('confirm-table').innerHTML =
-    [['Titular',bk.name],['Deporte',s.name],['Cancha',bk.court],['Fecha',dt],['Horario',`${bk.time} · ${s.duration} min`],['Teléfono',bk.phone]]
-    .map(([k,v],i,a)=>`<div class="confirm-row" style="${i===a.length-1?'border-bottom:none':''}">
+    rows.map(([k,v],i,a)=>`<div class="confirm-row" style="${i===a.length-1?'border-bottom:none':''}">
       <span class="confirm-key">${k}</span>
       <span class="confirm-val">${v}</span></div>`)
     .join('');

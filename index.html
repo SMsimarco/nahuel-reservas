@@ -1,170 +1,188 @@
 <!DOCTYPE html>
 <html lang="es">
+
 <head>
-  <meta charset="UTF-8"/>
-  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Club Nahuel · Reservas</title>
-  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Outfit:wght@400;500;600;700&display=swap" rel="stylesheet"/>
-  <link rel="stylesheet" href="style.css"/>
+  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Outfit:wght@400;500;600;700&display=swap"
+    rel="stylesheet" />
+  <link rel="stylesheet" href="style.css" />
 </head>
+
 <body>
 
-<!-- ══════════════════════════════════════════════ -->
-<!--  HOME                                          -->
-<!-- ══════════════════════════════════════════════ -->
-<div id="view-home" class="view active">
+  <!-- ══════════════════════════════════════════════ -->
+  <!--  HOME                                          -->
+  <!-- ══════════════════════════════════════════════ -->
+  <div id="view-home" class="view active">
 
-  <!-- Navbar blanca con logo -->
-  <div class="navbar">
-    <img class="navbar-logo" src="Logo_Nahuel.png" alt="Club Nahuel"/>
-    <a href="https://maps.google.com/?q=Club+Nahuel+Pozos+501+Tandil" target="_blank" class="maps-btn">
-      <span class="maps-pin">📍</span>
-      <div class="maps-btn-text">
-        <strong>Pozos 501</strong>
-        <span>Ver en Maps →</span>
+    <!-- Navbar blanca con logo -->
+    <div class="navbar">
+      <img class="navbar-logo" src="Logo_Nahuel.png" alt="Club Nahuel" />
+      <a href="https://maps.google.com/?q=Club+Nahuel+Pozos+501+Tandil" target="_blank" class="maps-btn">
+        <span class="maps-pin">📍</span>
+        <div class="maps-btn-text">
+          <strong>Pozos 501</strong>
+          <span>Ver en Maps →</span>
+        </div>
+      </a>
+    </div>
+
+    <!-- Hero negro con texto -->
+    <div class="hero">
+      <div class="hero-headline">RESERVÁ<br />TU <em>CANCHA</em></div>
+      <div class="hero-sub">Sin llamadas · Sin esperas · Desde tu celular</div>
+    </div>
+
+    <!-- Ticker animado -->
+    <div class="ticker">
+      <div class="ticker-inner">
+        <span>PÁDEL &nbsp;·&nbsp; FÚTBOL &nbsp;·&nbsp; RESERVAS ONLINE &nbsp;·&nbsp; CLUB NAHUEL &nbsp;·&nbsp; TANDIL
+          &nbsp;·&nbsp; PÁDEL &nbsp;·&nbsp; FÚTBOL &nbsp;·&nbsp; RESERVAS ONLINE &nbsp;·&nbsp; CLUB NAHUEL &nbsp;·&nbsp;
+          TANDIL &nbsp;·&nbsp; PÁDEL &nbsp;·&nbsp; FÚTBOL &nbsp;·&nbsp; RESERVAS ONLINE &nbsp;·&nbsp; CLUB NAHUEL
+          &nbsp;·&nbsp; TANDIL &nbsp;·&nbsp; PÁDEL &nbsp;·&nbsp; FÚTBOL &nbsp;·&nbsp; RESERVAS ONLINE &nbsp;·&nbsp; CLUB
+          NAHUEL &nbsp;·&nbsp; TANDIL &nbsp;·&nbsp;</span>
+        <span>PÁDEL &nbsp;·&nbsp; FÚTBOL &nbsp;·&nbsp; RESERVAS ONLINE &nbsp;·&nbsp; CLUB NAHUEL &nbsp;·&nbsp; TANDIL
+          &nbsp;·&nbsp; PÁDEL &nbsp;·&nbsp; FÚTBOL &nbsp;·&nbsp; RESERVAS ONLINE &nbsp;·&nbsp; CLUB NAHUEL &nbsp;·&nbsp;
+          TANDIL &nbsp;·&nbsp; PÁDEL &nbsp;·&nbsp; FÚTBOL &nbsp;·&nbsp; RESERVAS ONLINE &nbsp;·&nbsp; CLUB NAHUEL
+          &nbsp;·&nbsp; TANDIL &nbsp;·&nbsp; PÁDEL &nbsp;·&nbsp; FÚTBOL &nbsp;·&nbsp; RESERVAS ONLINE &nbsp;·&nbsp; CLUB
+          NAHUEL &nbsp;·&nbsp; TANDIL &nbsp;·&nbsp;</span>
       </div>
-    </a>
-  </div>
-
-  <!-- Hero negro con texto -->
-  <div class="hero">
-    <div class="hero-headline">RESERVÁ<br/>TU <em>CANCHA</em></div>
-    <div class="hero-sub">Sin llamadas · Sin esperas · Desde tu celular</div>
-  </div>
-
-  <!-- Ticker animado -->
-  <div class="ticker">
-    <div class="ticker-inner">
-      <span>PÁDEL &nbsp;·&nbsp; FÚTBOL &nbsp;·&nbsp; RESERVAS ONLINE &nbsp;·&nbsp; CLUB NAHUEL &nbsp;·&nbsp; TANDIL &nbsp;·&nbsp; PÁDEL &nbsp;·&nbsp; FÚTBOL &nbsp;·&nbsp; RESERVAS ONLINE &nbsp;·&nbsp; CLUB NAHUEL &nbsp;·&nbsp; TANDIL &nbsp;·&nbsp; PÁDEL &nbsp;·&nbsp; FÚTBOL &nbsp;·&nbsp; RESERVAS ONLINE &nbsp;·&nbsp; CLUB NAHUEL &nbsp;·&nbsp; TANDIL &nbsp;·&nbsp; PÁDEL &nbsp;·&nbsp; FÚTBOL &nbsp;·&nbsp; RESERVAS ONLINE &nbsp;·&nbsp; CLUB NAHUEL &nbsp;·&nbsp; TANDIL &nbsp;·&nbsp;</span>
-      <span>PÁDEL &nbsp;·&nbsp; FÚTBOL &nbsp;·&nbsp; RESERVAS ONLINE &nbsp;·&nbsp; CLUB NAHUEL &nbsp;·&nbsp; TANDIL &nbsp;·&nbsp; PÁDEL &nbsp;·&nbsp; FÚTBOL &nbsp;·&nbsp; RESERVAS ONLINE &nbsp;·&nbsp; CLUB NAHUEL &nbsp;·&nbsp; TANDIL &nbsp;·&nbsp; PÁDEL &nbsp;·&nbsp; FÚTBOL &nbsp;·&nbsp; RESERVAS ONLINE &nbsp;·&nbsp; CLUB NAHUEL &nbsp;·&nbsp; TANDIL &nbsp;·&nbsp; PÁDEL &nbsp;·&nbsp; FÚTBOL &nbsp;·&nbsp; RESERVAS ONLINE &nbsp;·&nbsp; CLUB NAHUEL &nbsp;·&nbsp; TANDIL &nbsp;·&nbsp;</span>
     </div>
-  </div>
 
-  <!-- Cards de deporte y contenido -->
-  <div class="sports-wrap">
-    <div class="section-label">¿Qué querés jugar?</div>
+    <!-- Cards de deporte y contenido -->
+    <div class="sports-wrap">
+      <div class="section-label">¿Qué querés jugar?</div>
 
-    <div class="sport-card padel" onclick="selectSport('padel')">
-      <div class="sport-icon-wrap">🏸</div>
-      <div class="sport-card-body">
-        <div class="sport-name">PÁDEL</div>
-        <div class="sport-meta">3 canchas · 60 minutos · Cubierto</div>
+      <div class="sport-card padel" onclick="selectSport('padel')">
+        <div class="sport-icon-wrap">🏸</div>
+        <div class="sport-card-body">
+          <div class="sport-name">PÁDEL</div>
+          <div class="sport-meta">3 canchas · 60 minutos · Cubierto</div>
+        </div>
+        <div class="sport-arrow">›</div>
       </div>
-      <div class="sport-arrow">›</div>
-    </div>
 
-    <div class="sport-card futbol" onclick="selectSport('futbol')">
-      <div class="sport-icon-wrap">⚽</div>
-      <div class="sport-card-body">
-        <div class="sport-name">FÚTBOL</div>
-        <div class="sport-meta">3 canchas · 60 minutos · Césped sintético y Cubierto</div>
+      <div class="sport-card futbol" onclick="selectSport('futbol')">
+        <div class="sport-icon-wrap">⚽</div>
+        <div class="sport-card-body">
+          <div class="sport-name">FÚTBOL</div>
+          <div class="sport-meta">3 canchas · 60 minutos · Césped sintético y Cubierto</div>
+        </div>
+        <div class="sport-arrow">›</div>
       </div>
-      <div class="sport-arrow">›</div>
-    </div>
 
-    <div style="height:1px;background:var(--gray);margin:8px 0 20px"></div>
+      <div style="height:1px;background:var(--gray);margin:8px 0 20px"></div>
 
-    <button class="secondary-card" onclick="goTo('view-mis-turnos')">
-      <div class="sc-icon">📋</div>
-      <div>
-        <div class="sc-title">Mis reservas</div>
-        <div class="sc-sub" id="home-bk-count">Sin turnos próximos</div>
+      <button class="secondary-card" onclick="goTo('view-mis-turnos')">
+        <div class="sc-icon">📋</div>
+        <div>
+          <div class="sc-title">Mis reservas</div>
+          <div class="sc-sub" id="home-bk-count">Sin turnos próximos</div>
+        </div>
+        <div class="sc-arr">›</div>
+      </button>
+
+      <div class="section-label" style="margin-top:4px">Horarios del club</div>
+      <div class="horarios-card">
+        <div class="horarios-row"><span>Lun a Vie</span><span>08:00 – 22:00</span></div>
+        <div class="horarios-row"><span>Sábados</span><span>08:00 – 20:00</span></div>
+        <div class="horarios-row"><span>Domingos</span><span>09:00 – 18:00</span></div>
       </div>
-      <div class="sc-arr">›</div>
-    </button>
+    </div>
 
-    <div class="section-label" style="margin-top:4px">Horarios del club</div>
-    <div class="horarios-card">
-      <div class="horarios-row"><span>Lun a Vie</span><span>08:00 – 22:00</span></div>
-      <div class="horarios-row"><span>Sábados</span><span>08:00 – 20:00</span></div>
-      <div class="horarios-row"><span>Domingos</span><span>09:00 – 18:00</span></div>
+  </div><!-- fin #view-home -->
+
+
+  <!-- ══════════════════════════════════════════════ -->
+  <!--  GRILLA DE TURNOS                              -->
+  <!-- ══════════════════════════════════════════════ -->
+  <div id="view-grid" class="view">
+    <div class="page-header" id="grid-header">
+      <button class="back-btn" onclick="goTo('view-home')">← Inicio</button>
+      <div class="page-title" id="grid-title">Pádel</div>
+      <div class="page-sub" id="grid-sub">3 canchas · 60 min</div>
+      <div class="date-strip">
+        <button class="nav-btn" onclick="shiftWeek(-1)">‹</button>
+        <div class="days-scroll" id="days-scroll"></div>
+        <button class="nav-btn" onclick="shiftWeek(1)">›</button>
+      </div>
+      <div class="sel-date-label" id="sel-date-label"></div>
+    </div>
+    <div class="grid-wrap">
+      <div class="grid-inner" id="grid-inner"></div>
+      <div class="legend">
+        <div class="legend-item">
+          <div class="legend-dot avail"></div> Disponible
+        </div>
+        <div class="legend-item">
+          <div class="legend-dot na"></div> Reservado / Pasado
+        </div>
+      </div>
     </div>
   </div>
 
-</div><!-- fin #view-home -->
 
-
-<!-- ══════════════════════════════════════════════ -->
-<!--  GRILLA DE TURNOS                              -->
-<!-- ══════════════════════════════════════════════ -->
-<div id="view-grid" class="view">
-  <div class="page-header" id="grid-header">
-    <button class="back-btn" onclick="goTo('view-home')">← Inicio</button>
-    <div class="page-title" id="grid-title">Pádel</div>
-    <div class="page-sub" id="grid-sub">3 canchas · 60 min</div>
-    <div class="date-strip">
-      <button class="nav-btn" onclick="shiftWeek(-1)">‹</button>
-      <div class="days-scroll" id="days-scroll"></div>
-      <button class="nav-btn" onclick="shiftWeek(1)">›</button>
+  <!-- ══════════════════════════════════════════════ -->
+  <!--  FORMULARIO DE RESERVA                         -->
+  <!-- ══════════════════════════════════════════════ -->
+  <div id="view-form" class="view">
+    <div class="page-header">
+      <button class="back-btn" onclick="goTo('view-grid')">← Volver</button>
+      <div class="page-title">Confirmá tu turno</div>
     </div>
-    <div class="sel-date-label" id="sel-date-label"></div>
-  </div>
-  <div class="grid-wrap">
-    <div class="grid-inner" id="grid-inner"></div>
-    <div class="legend">
-      <div class="legend-item"><div class="legend-dot avail"></div> Disponible</div>
-      <div class="legend-item"><div class="legend-dot na"></div> Reservado / Pasado</div>
-    </div>
-  </div>
-</div>
-
-
-<!-- ══════════════════════════════════════════════ -->
-<!--  FORMULARIO DE RESERVA                         -->
-<!-- ══════════════════════════════════════════════ -->
-<div id="view-form" class="view">
-  <div class="page-header">
-    <button class="back-btn" onclick="goTo('view-grid')">← Volver</button>
-    <div class="page-title">Confirmá tu turno</div>
-  </div>
-  <div class="form-wrap">
-    <div class="summary-card" id="summary-card">
-      <div class="summary-label" id="summary-label"></div>
-      <div class="summary-grid" id="summary-grid"></div>
-    </div>
-    <label class="field-label" for="inp-name">Nombre y apellido</label>
-    <input class="field-input" id="inp-name" type="text" placeholder="Ej: Juan Pérez" oninput="checkForm()"/>
-    <label class="field-label" for="inp-phone">Teléfono / WhatsApp</label>
-    <input class="field-input" id="inp-phone" type="tel" placeholder="Ej: 2494 123456" oninput="checkForm()"/>
-    <button class="btn-primary green" id="btn-confirm" disabled onclick="confirmBooking()">CONFIRMAR RESERVA</button>
-    <div class="form-legal">Al confirmar aceptás las normas de uso de las instalaciones del club.</div>
-  </div>
-</div>
-
-
-<!-- ══════════════════════════════════════════════ -->
-<!--  PANTALLA DE CONFIRMACIÓN                      -->
-<!-- ══════════════════════════════════════════════ -->
-<div id="view-ok" class="view">
-  <div class="ok-hero">
-    <img class="ok-logo" src="Logo_Nahuel.png" alt="Club Nahuel"/>
-    <div class="ok-tag">Reserva confirmada</div>
-  </div>
-  <div class="ok-body">
-    <div class="ok-circle">✓</div>
-    <div class="ok-title">¡LISTO!</div>
-    <div class="ok-sub">Tu turno quedó reservado. Te esperamos en el club.</div>
-    <div class="confirm-table" id="confirm-table"></div>
-    <div class="btn-row">
-      <button class="btn-primary outline" style="flex:1" onclick="goTo('view-home'); setSport(null)">Inicio</button>
-      <button class="btn-primary green"   style="flex:2" onclick="goTo('view-mis-turnos')">VER MIS TURNOS</button>
+    <div class="form-wrap">
+      <div class="summary-card" id="summary-card">
+        <div class="summary-label" id="summary-label"></div>
+        <div class="summary-grid" id="summary-grid"></div>
+      </div>
+      <label class="field-label" for="inp-name">Nombre y apellido</label>
+      <input class="field-input" id="inp-name" type="text" placeholder="Ej: Juan Pérez" oninput="checkForm()" />
+      <label class="field-label" for="inp-phone">Teléfono / WhatsApp</label>
+      <input class="field-input" id="inp-phone" type="tel" placeholder="Ej: 2494 123456" oninput="checkForm()" />
+      <label class="field-label" for="inp-email">Email</label>
+      <input class="field-input" id="inp-email" type="email" placeholder="Ej: juan@gmail.com" oninput="checkForm()" />
+      <button class="btn-primary green" id="btn-confirm" disabled onclick="confirmBooking()">CONFIRMAR RESERVA</button>
+      <div class="form-legal">Al confirmar aceptás las normas de uso de las instalaciones del club.</div>
     </div>
   </div>
-</div>
 
 
-<!-- ══════════════════════════════════════════════ -->
-<!--  MIS TURNOS                                    -->
-<!-- ══════════════════════════════════════════════ -->
-<div id="view-mis-turnos" class="view">
-  <div class="page-header">
-    <button class="back-btn" onclick="goTo('view-home')">← Inicio</button>
-    <div class="page-title">Mis turnos</div>
-    <div class="page-sub" id="mis-sub"></div>
+  <!-- ══════════════════════════════════════════════ -->
+  <!--  PANTALLA DE CONFIRMACIÓN                      -->
+  <!-- ══════════════════════════════════════════════ -->
+  <div id="view-ok" class="view">
+    <div class="ok-hero">
+      <img class="ok-logo" src="Logo_Nahuel.png" alt="Club Nahuel" />
+      <div class="ok-tag">Reserva confirmada</div>
+    </div>
+    <div class="ok-body">
+      <div class="ok-circle">✓</div>
+      <div class="ok-title">¡LISTO!</div>
+      <div class="ok-sub">Tu turno quedó reservado. Te esperamos en el club.</div>
+      <div class="confirm-table" id="confirm-table"></div>
+      <div class="btn-row">
+        <button class="btn-primary outline" style="flex:1" onclick="goTo('view-home'); setSport(null)">Inicio</button>
+        <button class="btn-primary green" style="flex:2" onclick="goTo('view-mis-turnos')">VER MIS TURNOS</button>
+      </div>
+    </div>
   </div>
-  <div class="bookings-wrap" id="bookings-wrap"></div>
-</div>
 
-<script src="app.js"></script>
+
+  <!-- ══════════════════════════════════════════════ -->
+  <!--  MIS TURNOS                                    -->
+  <!-- ══════════════════════════════════════════════ -->
+  <div id="view-mis-turnos" class="view">
+    <div class="page-header">
+      <button class="back-btn" onclick="goTo('view-home')">← Inicio</button>
+      <div class="page-title">Mis turnos</div>
+      <div class="page-sub" id="mis-sub"></div>
+    </div>
+    <div class="bookings-wrap" id="bookings-wrap"></div>
+  </div>
+
+  <script src="app.js"></script>
 </body>
+
 </html>
