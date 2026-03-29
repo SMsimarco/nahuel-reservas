@@ -1,7 +1,34 @@
+/* ── SUPABASE CONFIG ─────────────────────────────── */
+const SB_URL = 'https://tzfnjozxvdnadaryyahy.supabase.co';
+const SB_KEY = 'sb_publishable_z6R0-d9ulf316kicFHFeAQ_Dw2cANhr';
+
+async function sbGet(table, filters = '') {
+  const res = await fetch(`${SB_URL}/rest/v1/${table}?${filters}`, {
+    headers: { apikey: SB_KEY, Authorization: `Bearer ${SB_KEY}`, 'Content-Type': 'application/json' }
+  });
+  return res.json();
+}
+
+async function sbPost(table, data) {
+  const res = await fetch(`${SB_URL}/rest/v1/${table}`, {
+    method: 'POST',
+    headers: { apikey: SB_KEY, Authorization: `Bearer ${SB_KEY}`, 'Content-Type': 'application/json', Prefer: 'return=representation' },
+    body: JSON.stringify(data)
+  });
+  return res.json();
+}
+
+async function sbDelete(table, id) {
+  await fetch(`${SB_URL}/rest/v1/${table}?id=eq.${id}`, {
+    method: 'DELETE',
+    headers: { apikey: SB_KEY, Authorization: `Bearer ${SB_KEY}` }
+  });
+}
+
 /* ── DATA ─────────────────────────────────────────── */
 const SPORTS = {
-  padel:  { name:'Pádel',  icon:'🏸', courts:['Cancha A','Cancha B','Cancha C'], duration:60,  tag:'3 canchas · 60 min',  accent:'var(--green)', accentLight:'var(--glight)', accentClass:'accent-padel' },
-  futbol: { name:'Fútbol', icon:'⚽', courts:['Cancha F8','Cancha F6','Cancha F5'], duration:60, tag:'3 canchas · 60 min', accent:'var(--blue)',  accentLight:'var(--bluelight)', accentClass:'accent-blue'  },
+  padel:  { name:'Pádel',  icon:'🏸', courts:['Cancha A','Cancha B','Cancha C'],         duration:60, tag:'3 canchas · 60 min', accent:'var(--green)', accentLight:'var(--glight)', accentClass:'accent-padel' },
+  futbol: { name:'Fútbol', icon:'⚽', courts:['Cancha Interior','Cancha Exterior'], duration:90, tag:'2 canchas · 90 min', accent:'var(--blue)',  accentLight:'var(--bluelight)', accentClass:'accent-blue'  },
 };
 const SLOTS = Array.from({length:16},(_,i)=>`${String(6+i).padStart(2,'0')}:00`);
 
@@ -10,17 +37,27 @@ let selectedDate  = new Date();
 let wkStart       = getMonday(new Date());
 let pendingSlot   = null;
 let bookings      = [];
+let blocks        = [];
 
 function fmt(d){ return d.toISOString().split('T')[0]; }
 function today(){ return fmt(new Date()); }
 function getMonday(d){ const x=new Date(d); x.setDate(x.getDate()-((x.getDay()+6)%7)); return x; }
 
-/* ── STORAGE ─────────────────────────────────────── */
-function load(){
-  try{ bookings=JSON.parse(localStorage.getItem('nahuel_turnos')||'[]'); }catch(e){ bookings=[]; }
+/* ── LOAD DATA ───────────────────────────────────── */
+async function loadAll() {
+  try {
+    [bookings, blocks] = await Promise.all([
+      sbGet('bookings', 'order=date,time'),
+      sbGet('blocks')
+    ]);
+    if (!Array.isArray(bookings)) bookings = [];
+    if (!Array.isArray(blocks))   blocks   = [];
+  } catch(e) {
+    bookings = []; blocks = [];
+  }
+  updateHomeCount();
 }
-function save(){ localStorage.setItem('nahuel_turnos', JSON.stringify(bookings)); }
-load();
+loadAll();
 
 /* ── ROUTING ─────────────────────────────────────── */
 function goTo(id){
@@ -34,10 +71,9 @@ function goTo(id){
 /* ── HOME ─────────────────────────────────────────── */
 function updateHomeCount(){
   const n = bookings.filter(b=>b.date>=today()).length;
-  document.getElementById('home-bk-count').textContent =
-    n===0 ? 'Sin turnos próximos' : `${n} turno${n>1?'s':''} próximo${n>1?'s':''}`;
+  const el = document.getElementById('home-bk-count');
+  if(el) el.textContent = n===0 ? 'Sin turnos próximos' : `${n} turno${n>1?'s':''} próximo${n>1?'s':''}`;
 }
-updateHomeCount();
 
 /* ── SPORT SELECT ────────────────────────────────── */
 function setSport(key){ currentSport=key; }
@@ -95,23 +131,13 @@ function renderDays(){
 
 /* ── GRID ─────────────────────────────────────────── */
 function isBooked(court, time, date){
-  const booked = bookings.some(b =>
-    b.court === court && b.time === time &&
-    b.date === fmt(date) && b.sport === currentSport
-  );
+  const dateStr = fmt(date);
+  const booked = bookings.some(b=>b.court===court&&b.time===time&&b.date===dateStr&&b.sport===currentSport);
   if(booked) return true;
-
-  // Chequear bloqueos del admin
-  try {
-    const blocks = JSON.parse(localStorage.getItem('nahuel_blocks') || '[]');
-    return blocks.some(b =>
-      b.court === court && b.time === time &&
-      b.date === fmt(date) && b.sport === currentSport
-    );
-  } catch(e) { return false; }
+  return blocks.some(b=>b.court===court&&b.time===time&&b.date===dateStr&&b.sport===currentSport);
 }
 
-function isPastSlot(time,date){
+function isPastSlot(time, date){
   if(fmt(date)>today()) return false;
   if(fmt(date)<today()) return true;
   return parseInt(time)<=new Date().getHours();
@@ -123,19 +149,17 @@ function renderGrid(){
   const ncol = s.courts.length;
   const colT = `56px repeat(${ncol},1fr)`;
 
-  let html = `<div class="grid-header" style="grid-template-columns:${colT}">
-    <div></div>`;
+  let html = `<div class="grid-header" style="grid-template-columns:${colT}"><div></div>`;
   s.courts.forEach(c=>{ html+=`<div class="court-label">${c}</div>`; });
   html += '</div>';
 
   SLOTS.forEach(time=>{
-    html += `<div class="grid-row" style="grid-template-columns:${colT}">
-      <div class="time-label">${time}</div>`;
+    html += `<div class="grid-row" style="grid-template-columns:${colT}"><div class="time-label">${time}</div>`;
     s.courts.forEach(court=>{
       const taken = isBooked(court,time,selectedDate);
       const gone  = isPastSlot(time,selectedDate);
       const avail = !taken && !gone;
-      const cls   = avail ? '' : (taken ? 'taken' : 'gone');
+      const cls   = avail ? '' : 'taken';
       const label = avail ? 'Reservar' : 'Reservado';
       const click = avail ? `openForm('${court}','${time}')` : '';
       html += `<button class="slot-btn ${cls}" ${avail?'':'disabled'} ${click?`onclick="${click}"`:''}>${label}</button>`;
@@ -146,11 +170,11 @@ function renderGrid(){
 }
 
 /* ── FORM ─────────────────────────────────────────── */
-function openForm(court,time){
-  pendingSlot = {court,time};
+function openForm(court, time){
+  pendingSlot = {court, time};
   const s  = SPORTS[currentSport];
   const sc = document.getElementById('summary-card');
-  sc.style.background = s.accentLight;
+  sc.style.background      = s.accentLight;
   sc.style.borderLeftColor = s.accent;
   document.getElementById('summary-label').style.color = s.accent;
   document.getElementById('summary-label').textContent = 'DETALLE DE LA RESERVA';
@@ -163,7 +187,7 @@ function openForm(court,time){
 
   document.getElementById('inp-name').value  = '';
   document.getElementById('inp-phone').value = '';
-  document.getElementById('inp-email').value = '';
+  if(document.getElementById('inp-email')) document.getElementById('inp-email').value = '';
   document.getElementById('btn-confirm').disabled = true;
   goTo('view-form');
 }
@@ -174,25 +198,35 @@ function checkForm(){
   document.getElementById('btn-confirm').disabled = !ok;
 }
 
-function confirmBooking(){
+async function confirmBooking(){
   const name  = document.getElementById('inp-name').value.trim();
   const phone = document.getElementById('inp-phone').value.trim();
-  const email = document.getElementById('inp-email').value.trim();
+  const email = document.getElementById('inp-email') ? document.getElementById('inp-email').value.trim() : '';
+  if(!name||!phone) return;
 
-  if(!name||!phone||!email) return;
+  const btn = document.getElementById('btn-confirm');
+  btn.disabled = true;
+  btn.textContent = 'GUARDANDO...';
 
   const bk = {
-    id: Date.now().toString(),
-    sport:  currentSport,
-    court:  pendingSlot.court,
-    time:   pendingSlot.time,
-    date:   fmt(selectedDate),
+    id:    Date.now().toString(),
+    sport: currentSport,
+    court: pendingSlot.court,
+    time:  pendingSlot.time,
+    date:  fmt(selectedDate),
     name, phone, email
   };
-  bookings.push(bk);
-  save();
-  renderConfirm(bk);
-  goTo('view-ok');
+
+  try {
+    await sbPost('bookings', bk);
+    bookings.push(bk);
+    renderConfirm(bk);
+    goTo('view-ok');
+  } catch(e) {
+    alert('Error al guardar la reserva. Intentá de nuevo.');
+    btn.disabled = false;
+    btn.textContent = 'CONFIRMAR RESERVA';
+  }
 }
 
 function renderConfirm(bk){
@@ -208,7 +242,13 @@ function renderConfirm(bk){
 }
 
 /* ── MY BOOKINGS ─────────────────────────────────── */
-function renderBookings(){
+async function renderBookings(){
+  // Refrescar desde Supabase
+  try {
+    bookings = await sbGet('bookings','order=date,time');
+    if(!Array.isArray(bookings)) bookings=[];
+  } catch(e){}
+
   const upcoming = bookings.filter(b=>b.date>=today()).sort((a,b)=>a.date.localeCompare(b.date)||a.time.localeCompare(b.time));
   const past     = bookings.filter(b=>b.date<today()).sort((a,b)=>b.date.localeCompare(a.date));
   document.getElementById('mis-sub').textContent = `${upcoming.length} próximo${upcoming.length!==1?'s':''} · ${past.length} finalizado${past.length!==1?'s':''}`;
@@ -268,9 +308,9 @@ function askCancel(id){
     </div>`;
 }
 
-function doCancel(id){
+async function doCancel(id){
+  await sbDelete('bookings', id);
   bookings = bookings.filter(b=>b.id!==id);
-  save();
-  renderBookings();
   updateHomeCount();
+  renderBookings();
 }
