@@ -143,29 +143,45 @@ function isPastSlot(time, date){
   return parseInt(time)<=new Date().getHours();
 }
 
+let selectedCourt = null;
 function renderGrid(){
-  const s    = SPORTS[currentSport];
+  const s = SPORTS[currentSport];
   const wrap = document.getElementById('grid-inner');
-  const ncol = s.courts.length;
-  const colT = `56px repeat(${ncol},1fr)`;
+  const accent = currentSport === 'padel' ? 'var(--green)' : 'var(--blue)';
 
-  let html = `<div class="grid-header" style="grid-template-columns:${colT}"><div></div>`;
-  s.courts.forEach(c=>{ html+=`<div class="court-label">${c}</div>`; });
-  html += '</div>';
+  // Filtrar solo slots futuros para no mostrar columnas pasadas
+  const visibleSlots = SLOTS.filter(time => !isPastSlot(time, selectedDate) || 
+    s.courts.some(c => isBooked(c, time, selectedDate)));
 
-  SLOTS.forEach(time=>{
-    html += `<div class="grid-row" style="grid-template-columns:${colT}"><div class="time-label">${time}</div>`;
-    s.courts.forEach(court=>{
-      const taken = isBooked(court,time,selectedDate);
-      const gone  = isPastSlot(time,selectedDate);
-      const avail = !taken && !gone;
-      const cls   = avail ? '' : 'taken';
-      const label = avail ? 'Reservar' : 'Reservado';
-      const click = avail ? `openForm('${court}','${time}')` : '';
-      html += `<button class="slot-btn ${cls}" ${avail?'':'disabled'} ${click?`onclick="${click}"`:''}>${label}</button>`;
-    });
-    html += '</div>';
+  let html = `<div class="matrix-wrap"><table class="matrix-table">`;
+  
+  // Header con horas
+  html += `<thead><tr><th class="matrix-corner"></th>`;
+  visibleSlots.forEach(time => {
+    html += `<th class="matrix-hour">${time}</th>`;
   });
+  html += `</tr></thead><tbody>`;
+
+  // Fila por cancha
+  s.courts.forEach(court => {
+    html += `<tr><td class="matrix-court">${court}</td>`;
+    visibleSlots.forEach(time => {
+      const taken = isBooked(court, time, selectedDate);
+      const gone  = isPastSlot(time, selectedDate);
+      const avail = !taken && !gone;
+      html += avail
+        ? `<td class="matrix-cell avail" onclick="openForm('${court}','${time}')" style="--ac:${accent}"></td>`
+        : `<td class="matrix-cell taken"></td>`;
+    });
+    html += `</tr>`;
+  });
+
+  html += `</tbody></table>`;
+  html += `<div class="matrix-legend">
+    <div class="matrix-leg-item"><div class="matrix-leg-dot avail" style="background:${accent}"></div>Disponible</div>
+    <div class="matrix-leg-item"><div class="matrix-leg-dot taken"></div>Reservado</div>
+  </div></div>`;
+  
   wrap.innerHTML = html;
 }
 
