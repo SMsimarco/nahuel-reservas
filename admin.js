@@ -5,7 +5,7 @@ const PASSWORD = 'nahuel2025';
 
 const SPORTS = {
   padel:  { name: 'Pádel',  icon: '🏸', courts: ['Cancha A', 'Cancha B', 'Cancha C'] },
-  futbol: { name: 'Fútbol', icon: '⚽', courts: ['Cancha Interior', 'Cancha Exterior'] },
+  futbol: { name: 'Fútbol', icon: '⚽', courts: ['Cancha F8','Cancha F6','Cancha F5'] },
 };
 const SLOTS = Array.from({ length: 16 }, (_, i) => `${String(6 + i).padStart(2, '0')}:00`);
 

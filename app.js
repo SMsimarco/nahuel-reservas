@@ -27,21 +27,21 @@ async function sbDelete(table, id) {
 
 /* ── DATA ─────────────────────────────────────────── */
 const SPORTS = {
-  padel:  { name:'Pádel',  icon:'🏸', courts:['Cancha A','Cancha B','Cancha C'],         duration:60, tag:'3 canchas · 60 min', accent:'var(--green)', accentLight:'var(--glight)', accentClass:'accent-padel' },
-  futbol: { name:'Fútbol', icon:'⚽', courts:['Cancha Interior','Cancha Exterior'], duration:90, tag:'2 canchas · 90 min', accent:'var(--blue)',  accentLight:'var(--bluelight)', accentClass:'accent-blue'  },
+  padel: { name: 'Pádel', icon: '🏸', courts: ['Cancha A', 'Cancha B', 'Cancha C'], duration: 60, tag: '3 canchas · 60 min', accent: 'var(--green)', accentLight: 'var(--glight)', accentClass: 'accent-padel' },
+  futbol: { name: 'Fútbol', icon: '⚽', courts: ['Cancha F8', 'Cancha F6', 'Cancha F5'], duration: 60, tag: '3 canchas · 60 min', accent: 'var(--blue)', accentLight: 'var(--bluelight)', accentClass: 'accent-blue' },
 };
-const SLOTS = Array.from({length:16},(_,i)=>`${String(6+i).padStart(2,'0')}:00`);
+const SLOTS = Array.from({ length: 16 }, (_, i) => `${String(6 + i).padStart(2, '0')}:00`);
 
 let currentSport = null;
-let selectedDate  = new Date();
-let wkStart       = getMonday(new Date());
-let pendingSlot   = null;
-let bookings      = [];
-let blocks        = [];
+let selectedDate = new Date();
+let wkStart = getMonday(new Date());
+let pendingSlot = null;
+let bookings = [];
+let blocks = [];
 
-function fmt(d){ return d.toISOString().split('T')[0]; }
-function today(){ return fmt(new Date()); }
-function getMonday(d){ const x=new Date(d); x.setDate(x.getDate()-((x.getDay()+6)%7)); return x; }
+function fmt(d) { return d.toISOString().split('T')[0]; }
+function today() { return fmt(new Date()); }
+function getMonday(d) { const x = new Date(d); x.setDate(x.getDate() - ((x.getDay() + 6) % 7)); return x; }
 
 /* ── LOAD DATA ───────────────────────────────────── */
 async function loadAll() {
@@ -51,8 +51,8 @@ async function loadAll() {
       sbGet('blocks')
     ]);
     if (!Array.isArray(bookings)) bookings = [];
-    if (!Array.isArray(blocks))   blocks   = [];
-  } catch(e) {
+    if (!Array.isArray(blocks)) blocks = [];
+  } catch (e) {
     bookings = []; blocks = [];
   }
   updateHomeCount();
@@ -60,30 +60,31 @@ async function loadAll() {
 loadAll();
 
 /* ── ROUTING ─────────────────────────────────────── */
-function goTo(id){
-  document.querySelectorAll('.view').forEach(v=>v.classList.remove('active'));
+function goTo(id) {
+  document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
   document.getElementById(id).classList.add('active');
-  window.scrollTo(0,0);
-  if(id==='view-home') updateHomeCount();
-  if(id==='view-mis-turnos') renderBookings();
+  window.scrollTo(0, 0);
+  if (id === 'view-home') updateHomeCount();
+  if (id === 'view-mis-turnos') renderBookings();
 }
 
 /* ── HOME ─────────────────────────────────────────── */
-function updateHomeCount(){
-  const n = bookings.filter(b=>b.date>=today()).length;
+function updateHomeCount() {
+  const myIds = JSON.parse(localStorage.getItem('nahuel_my_ids') || '[]');
+  const n = bookings.filter(b => b.date >= today() && myIds.includes(b.id)).length;
   const el = document.getElementById('home-bk-count');
-  if(el) el.textContent = n===0 ? 'Sin turnos próximos' : `${n} turno${n>1?'s':''} próximo${n>1?'s':''}`;
+  if (el) el.textContent = n === 0 ? 'Sin turnos próximos' : `${n} turno${n > 1 ? 's' : ''} próximo${n > 1 ? 's' : ''}`;
 }
 
 /* ── SPORT SELECT ────────────────────────────────── */
-function setSport(key){ currentSport=key; }
-function selectSport(key){
+function setSport(key) { currentSport = key; }
+function selectSport(key) {
   currentSport = key;
   selectedDate = new Date();
   wkStart = getMonday(new Date());
   const s = SPORTS[key];
   document.getElementById('grid-title').textContent = s.name;
-  document.getElementById('grid-sub').textContent   = s.tag;
+  document.getElementById('grid-sub').textContent = s.tag;
   const hdr = document.getElementById('grid-header');
   hdr.className = 'page-header ' + s.accentClass;
   renderDays();
@@ -92,69 +93,69 @@ function selectSport(key){
 }
 
 /* ── DAYS ─────────────────────────────────────────── */
-function shiftWeek(dir){
+function shiftWeek(dir) {
   wkStart = new Date(wkStart);
-  wkStart.setDate(wkStart.getDate() + dir*7);
+  wkStart.setDate(wkStart.getDate() + dir * 7);
   renderDays();
   renderGrid();
 }
 
-function renderDays(){
+function renderDays() {
   const strip = document.getElementById('days-scroll');
   strip.innerHTML = '';
-  const s   = SPORTS[currentSport];
+  const s = SPORTS[currentSport];
   const hdr = document.getElementById('grid-header');
   hdr.className = 'page-header ' + s.accentClass;
 
-  for(let i=0;i<7;i++){
+  for (let i = 0; i < 7; i++) {
     const d = new Date(wkStart);
-    d.setDate(d.getDate()+i);
-    const df   = fmt(d);
-    const sel  = df===fmt(selectedDate);
-    const hoy  = df===today();
-    const past = df<today();
-    const dayNames=['DO','LU','MA','MI','JU','VI','SA'];
-    const dn   = dayNames[d.getDay()];
+    d.setDate(d.getDate() + i);
+    const df = fmt(d);
+    const sel = df === fmt(selectedDate);
+    const hoy = df === today();
+    const past = df < today();
+    const dayNames = ['DO', 'LU', 'MA', 'MI', 'JU', 'VI', 'SA'];
+    const dn = dayNames[d.getDay()];
 
     const btn = document.createElement('button');
-    btn.className = 'day-btn'+(sel?' selected':'')+(hoy?' today':'')+(past?' past':'');
+    btn.className = 'day-btn' + (sel ? ' selected' : '') + (hoy ? ' today' : '') + (past ? ' past' : '');
     btn.innerHTML =
       `<span class="dname">${dn}</span>` +
       `<span class="dnum">${d.getDate()}</span>` +
-      (hoy?`<span class="dhoy">HOY</span>`:'');
-    if(!past){ btn.onclick=()=>{ selectedDate=d; renderDays(); renderGrid(); }; }
+      (hoy ? `<span class="dhoy">HOY</span>` : '');
+    if (!past) { btn.onclick = () => { selectedDate = d; renderDays(); renderGrid(); }; }
     strip.appendChild(btn);
   }
   document.getElementById('sel-date-label').textContent =
-    selectedDate.toLocaleDateString('es-AR',{weekday:'long',day:'numeric',month:'long'});
+    selectedDate.toLocaleDateString('es-AR', { weekday: 'long', day: 'numeric', month: 'long' });
 }
 
 /* ── GRID ─────────────────────────────────────────── */
-function isBooked(court, time, date){
+function isBooked(court, time, date) {
   const dateStr = fmt(date);
-  const booked = bookings.some(b=>b.court===court&&b.time===time&&b.date===dateStr&&b.sport===currentSport);
-  if(booked) return true;
-  return blocks.some(b=>b.court===court&&b.time===time&&b.date===dateStr&&b.sport===currentSport);
+  const booked = bookings.some(b => b.court === court && b.time === time && b.date === dateStr && b.sport === currentSport);
+  if (booked) return true;
+  return blocks.some(b => b.court === court && b.time === time && b.date === dateStr && b.sport === currentSport);
 }
 
-function isPastSlot(time, date){
-  if(fmt(date)>today()) return false;
-  if(fmt(date)<today()) return true;
-  return parseInt(time)<=new Date().getHours();
+function isPastSlot(time, date) {
+  if (fmt(date) > today()) return false;
+  if (fmt(date) < today()) return true;
+  return parseInt(time) <= new Date().getHours();
 }
 
 let selectedCourt = null;
-function renderGrid(){
+function renderGrid() {
   const s = SPORTS[currentSport];
   const wrap = document.getElementById('grid-inner');
   const accent = currentSport === 'padel' ? 'var(--green)' : 'var(--blue)';
 
   // Filtrar solo slots futuros para no mostrar columnas pasadas
-  const visibleSlots = SLOTS.filter(time => !isPastSlot(time, selectedDate) || 
+  const visibleSlots = SLOTS.filter(time => !isPastSlot(time, selectedDate) ||
     s.courts.some(c => isBooked(c, time, selectedDate)));
 
   let html = `<div class="matrix-wrap"><table class="matrix-table">`;
-  
+
   // Header con horas
   html += `<thead><tr><th class="matrix-corner"></th>`;
   visibleSlots.forEach(time => {
@@ -167,7 +168,7 @@ function renderGrid(){
     html += `<tr><td class="matrix-court">${court}</td>`;
     visibleSlots.forEach(time => {
       const taken = isBooked(court, time, selectedDate);
-      const gone  = isPastSlot(time, selectedDate);
+      const gone = isPastSlot(time, selectedDate);
       const avail = !taken && !gone;
       html += avail
         ? `<td class="matrix-cell avail" onclick="openForm('${court}','${time}')" style="--ac:${accent}"></td>`
@@ -181,96 +182,103 @@ function renderGrid(){
     <div class="matrix-leg-item"><div class="matrix-leg-dot avail" style="background:${accent}"></div>Disponible</div>
     <div class="matrix-leg-item"><div class="matrix-leg-dot taken"></div>Reservado</div>
   </div></div>`;
-  
+
   wrap.innerHTML = html;
 }
 
 /* ── FORM ─────────────────────────────────────────── */
-function openForm(court, time){
-  pendingSlot = {court, time};
-  const s  = SPORTS[currentSport];
+function openForm(court, time) {
+  pendingSlot = { court, time };
+  const s = SPORTS[currentSport];
   const sc = document.getElementById('summary-card');
-  sc.style.background      = s.accentLight;
+  sc.style.background = s.accentLight;
   sc.style.borderLeftColor = s.accent;
   document.getElementById('summary-label').style.color = s.accent;
   document.getElementById('summary-label').textContent = 'DETALLE DE LA RESERVA';
 
-  const dateStr = selectedDate.toLocaleDateString('es-AR',{weekday:'long',day:'numeric',month:'long'});
+  const dateStr = selectedDate.toLocaleDateString('es-AR', { weekday: 'long', day: 'numeric', month: 'long' });
   document.getElementById('summary-grid').innerHTML =
-    [['Deporte',`${s.icon} ${s.name}`],['Cancha',court],['Fecha',dateStr],['Horario',`${time} · ${s.duration} min`]]
-    .map(([k,v])=>`<div><div class="summary-item-key" style="color:${s.accent}">${k}</div><div class="summary-item-val">${v}</div></div>`)
-    .join('');
+    [['Deporte', `${s.icon} ${s.name}`], ['Cancha', court], ['Fecha', dateStr], ['Horario', `${time} · ${s.duration} min`]]
+      .map(([k, v]) => `<div><div class="summary-item-key" style="color:${s.accent}">${k}</div><div class="summary-item-val">${v}</div></div>`)
+      .join('');
 
-  document.getElementById('inp-name').value  = '';
+  document.getElementById('inp-name').value = '';
   document.getElementById('inp-phone').value = '';
-  if(document.getElementById('inp-email')) document.getElementById('inp-email').value = '';
+  if (document.getElementById('inp-email')) document.getElementById('inp-email').value = '';
   document.getElementById('btn-confirm').disabled = true;
   goTo('view-form');
 }
 
-function checkForm(){
+function checkForm() {
   const ok = document.getElementById('inp-name').value.trim() &&
-             document.getElementById('inp-phone').value.trim();
+    document.getElementById('inp-phone').value.trim();
   document.getElementById('btn-confirm').disabled = !ok;
 }
 
-async function confirmBooking(){
-  const name  = document.getElementById('inp-name').value.trim();
+async function confirmBooking() {
+  const name = document.getElementById('inp-name').value.trim();
   const phone = document.getElementById('inp-phone').value.trim();
   const email = document.getElementById('inp-email') ? document.getElementById('inp-email').value.trim() : '';
-  if(!name||!phone) return;
+  if (!name || !phone) return;
 
   const btn = document.getElementById('btn-confirm');
   btn.disabled = true;
   btn.textContent = 'GUARDANDO...';
 
   const bk = {
-    id:    Date.now().toString(),
+    id: Date.now().toString(),
     sport: currentSport,
     court: pendingSlot.court,
-    time:  pendingSlot.time,
-    date:  fmt(selectedDate),
+    time: pendingSlot.time,
+    date: fmt(selectedDate),
     name, phone, email
   };
 
   try {
     await sbPost('bookings', bk);
     bookings.push(bk);
+    // Guardar ID propio en localStorage
+    const myIds = JSON.parse(localStorage.getItem('nahuel_my_ids') || '[]');
+    myIds.push(bk.id);
+    localStorage.setItem('nahuel_my_ids', JSON.stringify(myIds));
     renderConfirm(bk);
     goTo('view-ok');
-  } catch(e) {
+  } catch (e) {
     alert('Error al guardar la reserva. Intentá de nuevo.');
     btn.disabled = false;
     btn.textContent = 'CONFIRMAR RESERVA';
   }
 }
 
-function renderConfirm(bk){
-  const s  = SPORTS[bk.sport];
-  const dt = new Date(bk.date+'T12:00:00').toLocaleDateString('es-AR',{weekday:'long',day:'numeric',month:'long'});
-  const rows = [['Titular',bk.name],['Deporte',s.name],['Cancha',bk.court],['Fecha',dt],['Horario',`${bk.time} · ${s.duration} min`],['Teléfono',bk.phone]];
-  if(bk.email) rows.push(['Email', bk.email]);
+function renderConfirm(bk) {
+  const s = SPORTS[bk.sport];
+  const dt = new Date(bk.date + 'T12:00:00').toLocaleDateString('es-AR', { weekday: 'long', day: 'numeric', month: 'long' });
+  const rows = [['Titular', bk.name], ['Deporte', s.name], ['Cancha', bk.court], ['Fecha', dt], ['Horario', `${bk.time} · ${s.duration} min`], ['Teléfono', bk.phone]];
+  if (bk.email) rows.push(['Email', bk.email]);
   document.getElementById('confirm-table').innerHTML =
-    rows.map(([k,v],i,a)=>`<div class="confirm-row" style="${i===a.length-1?'border-bottom:none':''}">
+    rows.map(([k, v], i, a) => `<div class="confirm-row" style="${i === a.length - 1 ? 'border-bottom:none' : ''}">
       <span class="confirm-key">${k}</span>
       <span class="confirm-val">${v}</span></div>`)
-    .join('');
+      .join('');
 }
 
 /* ── MY BOOKINGS ─────────────────────────────────── */
 async function renderBookings(){
-  // Refrescar desde Supabase
   try {
     bookings = await sbGet('bookings','order=date,time');
     if(!Array.isArray(bookings)) bookings=[];
   } catch(e){}
 
-  const upcoming = bookings.filter(b=>b.date>=today()).sort((a,b)=>a.date.localeCompare(b.date)||a.time.localeCompare(b.time));
-  const past     = bookings.filter(b=>b.date<today()).sort((a,b)=>b.date.localeCompare(a.date));
-  document.getElementById('mis-sub').textContent = `${upcoming.length} próximo${upcoming.length!==1?'s':''} · ${past.length} finalizado${past.length!==1?'s':''}`;
+  // Solo mostrar los míos
+  const myIds = JSON.parse(localStorage.getItem('nahuel_my_ids') || '[]');
+  const myBookings = bookings.filter(b => myIds.includes(b.id));
+
+  const upcoming = myBookings.filter(b=>b.date>=today()).sort((a,b)=>a.date.localeCompare(b.date)||a.time.localeCompare(b.time));
+  const past     = myBookings.filter(b=>b.date<today()).sort((a,b)=>b.date.localeCompare(a.date));
+  document.getElementById('mis-sub').textContent = `${upcoming.length} próximo${upcoming.length !== 1 ? 's' : ''} · ${past.length} finalizado${past.length !== 1 ? 's' : ''}`;
 
   const wrap = document.getElementById('bookings-wrap');
-  if(!bookings.length){
+  if (!myBookings.length) {  
     wrap.innerHTML = `<div class="empty-state">
       <div class="empty-emoji">📋</div>
       <div class="empty-title">SIN RESERVAS</div>
@@ -280,28 +288,28 @@ async function renderBookings(){
     return;
   }
 
-  let html='';
-  if(upcoming.length){
+  let html = '';
+  if (upcoming.length) {
     html += `<div class="bk-section-label">PRÓXIMOS</div>`;
-    upcoming.forEach(b=>{ html+=bkCard(b,false); });
+    upcoming.forEach(b => { html += bkCard(b, false); });
   }
-  if(past.length){
+  if (past.length) {
     html += `<div class="bk-section-label">HISTORIAL</div>`;
-    past.forEach(b=>{ html+=bkCard(b,true); });
+    past.forEach(b => { html += bkCard(b, true); });
   }
   wrap.innerHTML = html;
 }
 
-function bkCard(b,isPast){
-  const s  = SPORTS[b.sport];
-  const dt = new Date(b.date+'T12:00:00').toLocaleDateString('es-AR',{weekday:'long',day:'numeric',month:'long'});
-  return `<div class="booking-card ${b.sport}${isPast?' past':''}" id="bk-${b.id}">
+function bkCard(b, isPast) {
+  const s = SPORTS[b.sport];
+  const dt = new Date(b.date + 'T12:00:00').toLocaleDateString('es-AR', { weekday: 'long', day: 'numeric', month: 'long' });
+  return `<div class="booking-card ${b.sport}${isPast ? ' past' : ''}" id="bk-${b.id}">
     <div class="bk-top">
       <div style="flex:1">
         <div style="display:flex;align-items:center;gap:4px;margin-bottom:5px">
           <span class="bk-sport">${s.name}</span>
           <span class="bk-court">· ${b.court}</span>
-          ${isPast?'<span class="bk-badge">Finalizado</span>':''}
+          ${isPast ? '<span class="bk-badge">Finalizado</span>' : ''}
         </div>
         <div class="bk-date">${dt}</div>
         <div class="bk-meta">${b.time} · ${s.duration} min · ${b.name} · ${b.phone}</div>
@@ -313,7 +321,7 @@ function bkCard(b,isPast){
   </div>`;
 }
 
-function askCancel(id){
+function askCancel(id) {
   document.getElementById(`cancel-wrap-${id}`).innerHTML =
     `<div class="cancel-confirm">
       <div class="cancel-ask">¿Cancelar?</div>
@@ -327,6 +335,9 @@ function askCancel(id){
 async function doCancel(id){
   await sbDelete('bookings', id);
   bookings = bookings.filter(b=>b.id!==id);
+  // Quitar de mis IDs
+  const myIds = JSON.parse(localStorage.getItem('nahuel_my_ids') || '[]');
+  localStorage.setItem('nahuel_my_ids', JSON.stringify(myIds.filter(x => x !== id)));
   updateHomeCount();
   renderBookings();
 }
