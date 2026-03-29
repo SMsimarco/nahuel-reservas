@@ -95,7 +95,113 @@ async function renderStats() {
 }
 
 /* ── TURNOS ─────────────────────────────────────── */
-let allBookings = [];
+let allBookings  = [];
+let currentView  = 'lista';
+let calStartDate = null; // primer día visible en el calendario
+
+const DAY_NAMES = ['Dom', 'Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb'];
+
+function isMobile() { return window.innerWidth <= 768; }
+
+function initCalStart() {
+  const now = new Date();
+  const d   = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+  if (isMobile()) {
+    calStartDate = d; // arranca desde hoy
+  } else {
+    const dow = d.getDay();
+    d.setDate(d.getDate() + (dow === 0 ? -6 : 1 - dow)); // lunes de esta semana
+    calStartDate = d;
+  }
+}
+
+function getCalDays() {
+  if (!calStartDate) initCalStart();
+  const count = isMobile() ? 3 : 7;
+  return Array.from({ length: count }, (_, i) => {
+    const d = new Date(calStartDate);
+    d.setDate(calStartDate.getDate() + i);
+    return d;
+  });
+}
+
+function switchView(view) {
+  currentView = view;
+  document.getElementById('view-lista').style.display      = view === 'lista'      ? 'block' : 'none';
+  document.getElementById('view-calendario').style.display = view === 'calendario' ? 'block' : 'none';
+  document.getElementById('btn-vista-lista').classList.toggle('active', view === 'lista');
+  document.getElementById('btn-vista-cal').classList.toggle('active',   view === 'calendario');
+  if (view === 'calendario') renderCalendar();
+}
+
+function moveCalendar(dir) {
+  if (!calStartDate) initCalStart();
+  const step = isMobile() ? 3 : 7;
+  calStartDate.setDate(calStartDate.getDate() + dir * step);
+  renderCalendar();
+}
+
+function goCalendarToday() { initCalStart(); renderCalendar(); }
+
+function renderCalendar() {
+  const days        = getCalDays();
+  const colCount    = days.length;
+  const todayStr    = today();
+  const nowHour     = `${String(new Date().getHours()).padStart(2, '0')}:00`;
+  const sportFilter = document.getElementById('filter-sport').value;
+
+  // Label del rango visible
+  const first = days[0], last = days[colCount - 1];
+  const sameMonth = first.getMonth() === last.getMonth();
+  document.getElementById('cal-week-label').textContent =
+    `${first.getDate()} ${first.toLocaleDateString('es-AR', { month: 'short' })}` +
+    (sameMonth ? '' : ` ${first.toLocaleDateString('es-AR', { month: 'short' })}`) +
+    ` – ${last.getDate()} ${last.toLocaleDateString('es-AR', { month: 'short', year: 'numeric' })}`;
+
+  // Lookup date|time -> bookings[]
+  const lookup = {};
+  allBookings.forEach(b => {
+    if (sportFilter && b.sport !== sportFilter) return;
+    const key = `${b.date}|${b.time}`;
+    if (!lookup[key]) lookup[key] = [];
+    lookup[key].push(b);
+  });
+
+  // Columnas dinámicas según cantidad de días
+  const timeColW = isMobile() ? '44px' : '52px';
+  document.getElementById('cal-grid').style.gridTemplateColumns =
+    `${timeColW} repeat(${colCount}, minmax(0, 1fr))`;
+
+  // Build grid HTML
+  let html = `<div class="cal-corner"></div>`;
+  days.forEach(d => {
+    const ds      = fmt(d);
+    const isToday = ds === todayStr;
+    html += `<div class="cal-day-header${isToday ? ' cal-today-header' : ''}">
+      <span class="cal-day-name">${DAY_NAMES[d.getDay()]}</span>
+      <span class="cal-day-num${isToday ? ' cal-today-num' : ''}">${d.getDate()}</span>
+    </div>`;
+  });
+
+  SLOTS.forEach(slot => {
+    html += `<div class="cal-time-label">${slot}</div>`;
+    days.forEach(d => {
+      const ds   = fmt(d);
+      const bks  = lookup[`${ds}|${slot}`] || [];
+      const past = ds < todayStr || (ds === todayStr && slot < nowHour);
+      html += `<div class="cal-cell${past ? ' cal-past' : ''}">`;
+      bks.forEach(b => {
+        html += `<div class="cal-card cal-card-${b.sport}" onclick="openEditModal('${b.id}')" title="${b.name} · ${b.court}">
+          <span class="cal-card-court">${b.court.replace('Cancha ', '')}</span>
+          <span class="cal-card-name">${b.name.split(' ')[0]}</span>
+        </div>`;
+      });
+      html += `</div>`;
+    });
+  });
+
+  document.getElementById('cal-grid').innerHTML = html;
+}
 
 async function renderTurnos() {
   document.getElementById('turnos-body').innerHTML = '<div class="loading">Cargando...</div>';
@@ -105,16 +211,27 @@ async function renderTurnos() {
 }
 
 function filterAndRenderTurnos() {
-  const sport  = document.getElementById('filter-sport').value;
-  const period = document.getElementById('filter-period').value;
-  const search = document.getElementById('filter-search').value.toLowerCase();
-  const t      = today();
+  const sport     = document.getElementById('filter-sport').value;
+  const period    = document.getElementById('filter-period').value;
+  const search    = document.getElementById('filter-search').value.toLowerCase();
+  const hourFrom  = document.getElementById('filter-hour-from').value;
+  const hourTo    = document.getElementById('filter-hour-to').value;
+  const t         = today();
 
   let bks = [...allBookings];
-  if (sport)             bks = bks.filter(b => b.sport === sport);
+  if (sport)              bks = bks.filter(b => b.sport === sport);
   if (period === 'today') bks = bks.filter(b => b.date === t);
   if (period === 'week')  bks = bks.filter(b => b.date >= t && b.date <= weekEnd());
-  if (search)            bks = bks.filter(b => b.name.toLowerCase().includes(search) || (b.phone || '').includes(search));
+  if (search)             bks = bks.filter(b => b.name.toLowerCase().includes(search) || (b.phone || '').includes(search));
+  if (hourFrom)           bks = bks.filter(b => b.time >= hourFrom);
+  if (hourTo)             bks = bks.filter(b => b.time <= hourTo);
+
+  // Contador
+  const countEl = document.getElementById('turnos-count');
+  if (countEl) countEl.textContent = bks.length ? `Mostrando ${bks.length} turno${bks.length !== 1 ? 's' : ''}` : '';
+
+  // Actualizar calendario si está visible
+  if (currentView === 'calendario') renderCalendar();
 
   const body = document.getElementById('turnos-body');
   if (!bks.length) {
@@ -142,9 +259,21 @@ function filterAndRenderTurnos() {
 }
 
 document.addEventListener('DOMContentLoaded', () => {
-  document.getElementById('filter-sport').addEventListener('change', filterAndRenderTurnos);
-  document.getElementById('filter-period').addEventListener('change', filterAndRenderTurnos);
-  document.getElementById('filter-search').addEventListener('input',  filterAndRenderTurnos);
+  // Poblar selects de rango horario
+  const slotOptions = SLOTS.map(s => `<option value="${s}">${s}</option>`).join('');
+  document.getElementById('filter-hour-from').innerHTML += slotOptions;
+  document.getElementById('filter-hour-to').innerHTML   += slotOptions;
+
+  document.getElementById('filter-sport').addEventListener('change',     filterAndRenderTurnos);
+  document.getElementById('filter-period').addEventListener('change',    filterAndRenderTurnos);
+  document.getElementById('filter-search').addEventListener('input',     filterAndRenderTurnos);
+  document.getElementById('filter-hour-from').addEventListener('change', filterAndRenderTurnos);
+  document.getElementById('filter-hour-to').addEventListener('change',   filterAndRenderTurnos);
+
+  // Redibujar calendario al rotar pantalla
+  window.addEventListener('resize', () => {
+    if (currentView === 'calendario') { initCalStart(); renderCalendar(); }
+  });
 });
 
 async function deleteBooking(id) {

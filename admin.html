@@ -42,7 +42,13 @@
   <!-- TAB TURNOS -->
   <div id="tab-turnos" class="admin-content">
     <div class="stats-grid" id="stats-grid"></div>
-    <div class="section-title">Reservas</div>
+    <div style="display:flex;align-items:center;margin-bottom:16px;gap:12px;flex-wrap:wrap">
+      <div class="section-title" style="margin-bottom:0;flex:1;min-width:120px">Reservas</div>
+      <div class="view-toggle">
+        <button class="view-btn active" id="btn-vista-lista" onclick="switchView('lista')">☰ Lista</button>
+        <button class="view-btn" id="btn-vista-cal" onclick="switchView('calendario')">📅 Semana</button>
+      </div>
+    </div>
     <div class="filter-bar">
       <span class="filter-label">Filtrar:</span>
       <select class="filter-select" id="filter-sport">
@@ -56,14 +62,40 @@
         <option value="all">Todos</option>
       </select>
       <input class="filter-input" id="filter-search" type="text" placeholder="Buscar nombre..." style="min-width:180px"/>
-    </div>
-    <div class="table-wrap">
-      <div class="table-header cols-bookings">
-        <span>Hora</span><span>Fecha</span><span>Deporte</span>
-        <span>Cancha</span><span>Titular</span>
-        <span class="hide-mobile">Teléfono</span><span></span>
+      <div class="filter-hour-group">
+        <select class="filter-select" id="filter-hour-from">
+          <option value="">Desde</option>
+        </select>
+        <select class="filter-select" id="filter-hour-to">
+          <option value="">Hasta</option>
+        </select>
       </div>
-      <div id="turnos-body"><div class="loading">Cargando...</div></div>
+    </div>
+
+    <!-- VISTA LISTA -->
+    <div id="view-lista">
+      <div id="turnos-count"></div>
+      <div class="table-wrap">
+        <div class="table-header cols-bookings">
+          <span>Hora</span><span>Fecha</span><span>Deporte</span>
+          <span>Cancha</span><span>Titular</span>
+          <span class="hide-mobile">Teléfono</span><span></span>
+        </div>
+        <div id="turnos-body"><div class="loading">Cargando...</div></div>
+      </div>
+    </div>
+
+    <!-- VISTA CALENDARIO -->
+    <div id="view-calendario" style="display:none">
+      <div class="cal-nav">
+        <button class="cal-nav-btn" onclick="moveCalendar(-1)">&#8592;</button>
+        <span class="cal-week-label" id="cal-week-label"></span>
+        <button class="cal-nav-btn" onclick="moveCalendar(1)">&#8594;</button>
+        <button class="cal-today-btn" onclick="goCalendarToday()">Hoy</button>
+      </div>
+      <div class="cal-wrap">
+        <div class="cal-grid" id="cal-grid"></div>
+      </div>
     </div>
   </div>
 
