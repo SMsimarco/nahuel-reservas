@@ -1,6 +1,7 @@
 /* ── SUPABASE CONFIG ─────────────────────────────── */
 const SB_URL = 'https://tzfnjozxvdnadaryyahy.supabase.co';
 const SB_KEY = 'sb_publishable_z6R0-d9ulf316kicFHFeAQ_Dw2cANhr';
+const sb     = supabase.createClient(SB_URL, SB_KEY);
 
 /* ── XSS PROTECTION ──────────────────────────────── */
 function escapeHTML(str) {
@@ -475,24 +476,23 @@ async function sendOTP() {
 
   document.getElementById('login-msg').textContent = 'Enviando...';
 
-  const res = await fetch(`${SB_URL}/auth/v1/otp`, {
-    method: 'POST',
-    headers: { apikey: SB_KEY, 'Content-Type': 'application/json' },
-    body: JSON.stringify({ email, create_user: true })
+  const { error } = await sb.auth.signInWithOtp({
+    email,
+    options: { shouldCreateUser: true }
   });
 
-  if (res.ok) {
-    currentLoginEmail = email;
-    document.getElementById('login-step-1').classList.add('hidden');
-    document.getElementById('login-step-2').classList.remove('hidden');
-    document.getElementById('login-msg').textContent = 'Código enviado. Revisá tu correo (y SPAM).';
-  } else {
+  if (error) {
     document.getElementById('login-msg').textContent = 'Error al enviar el código.';
+    return;
   }
+
+  currentLoginEmail = email;
+  document.getElementById('login-step-1').classList.add('hidden');
+  document.getElementById('login-step-2').classList.remove('hidden');
+  document.getElementById('login-msg').textContent = 'Código enviado. Revisá tu correo (y SPAM).';
 }
 
 async function verifyOTP() {
-  // Limpiar espacios y caracteres no numéricos que el teclado mobile puede agregar
   const token = document.getElementById('client-otp').value.replace(/\D/g, '').trim();
   if (!token) {
     document.getElementById('login-msg').textContent = 'Ingresá el código que llegó al correo.';
@@ -501,38 +501,39 @@ async function verifyOTP() {
 
   document.getElementById('login-msg').textContent = 'Verificando...';
 
-  const res  = await fetch(`${SB_URL}/auth/v1/verify`, {
-    method: 'POST',
-    headers: { apikey: SB_KEY, 'Content-Type': 'application/json' },
-    body: JSON.stringify({ email: currentLoginEmail, token, type: 'email' })
+  const { data, error } = await sb.auth.verifyOtp({
+    email: currentLoginEmail,
+    token,
+    type: 'email'
   });
-  const data = await res.json();
 
-  if (data.access_token) {
-    localStorage.setItem('nahuel_client_token', data.access_token);
-    document.getElementById('client-email').value = '';
-    document.getElementById('client-otp').value   = '';
-    resetLogin();
-
-    // Si había un turno pendiente antes del login, retomar el flujo
-    const pending = JSON.parse(localStorage.getItem('nahuel_pending_login') || 'null');
-    if (pending) {
-      localStorage.removeItem('nahuel_pending_login');
-      currentSport  = pending.sport;
-      selectedDate  = new Date(pending.date + 'T12:00:00');
-      wkStart       = getMonday(selectedDate);
-      const s       = SPORTS[currentSport];
-      document.getElementById('grid-title').textContent = s.name;
-      document.getElementById('grid-sub').textContent   = s.tag;
-      openForm(pending.court, pending.time);
-    } else {
-      goTo('view-home');
-    }
-    showToast('¡Sesión iniciada!');
-  } else {
-    const errMsg = data.error_description || data.msg || 'Código incorrecto o expirado.';
-    document.getElementById('login-msg').textContent = errMsg;
+  if (error) {
+    document.getElementById('login-msg').textContent = error.message || 'Código incorrecto o expirado.';
+    return;
   }
+
+  const accessToken = data.session?.access_token;
+  if (accessToken) localStorage.setItem('nahuel_client_token', accessToken);
+
+  document.getElementById('client-email').value = '';
+  document.getElementById('client-otp').value   = '';
+  resetLogin();
+
+  // Si había un turno pendiente antes del login, retomar el flujo
+  const pending = JSON.parse(localStorage.getItem('nahuel_pending_login') || 'null');
+  if (pending) {
+    localStorage.removeItem('nahuel_pending_login');
+    currentSport = pending.sport;
+    selectedDate = new Date(pending.date + 'T12:00:00');
+    wkStart      = getMonday(selectedDate);
+    const s      = SPORTS[currentSport];
+    document.getElementById('grid-title').textContent = s.name;
+    document.getElementById('grid-sub').textContent   = s.tag;
+    openForm(pending.court, pending.time);
+  } else {
+    goTo('view-home');
+  }
+  showToast('¡Sesión iniciada!');
 }
 
 function resetLogin() {
