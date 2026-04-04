@@ -1,7 +1,6 @@
 /* ── CONFIG ─────────────────────────────────────── */
 const SB_URL   = 'https://tzfnjozxvdnadaryyahy.supabase.co';
 const SB_KEY   = 'sb_publishable_z6R0-d9ulf316kicFHFeAQ_Dw2cANhr';
-const PASSWORD = 'nahuel2025';
 
 const SPORTS = {
   padel:  { name: 'Pádel',  icon: '🏸', courts: ['Cancha A', 'Cancha B', 'Cancha C'] },
@@ -13,17 +12,40 @@ function fmt(d)   { return d.toISOString().split('T')[0]; }
 function today()  { return fmt(new Date()); }
 function weekEnd(){ const d = new Date(); d.setDate(d.getDate() + (6 - d.getDay())); return fmt(d); }
 
-/* ── SUPABASE ───────────────────────────────────── */
-const headers = { apikey: SB_KEY, Authorization: `Bearer ${SB_KEY}`, 'Content-Type': 'application/json' };
+// Función para prevenir XSS sanitizando el texto
+function escapeHTML(str) {
+  if (typeof str !== 'string') return '';
+  return str.replace(/[&<>'"]/g, 
+    tag => ({
+      '&': '&amp;',
+      '<': '&lt;',
+      '>': '&gt;',
+      "'": '&#39;',
+      '"': '&quot;'
+    }[tag] || tag)
+  );
+}
+
+/* ── SUPABASE FETCH CON AUTH ────────────────────── */
+// Función dinámica para obtener headers. Si hay un administrador logueado, usa su token.
+function getHeaders() {
+  const adminToken = localStorage.getItem('nahuel_admin_token');
+  return {
+    apikey: SB_KEY,
+    Authorization: `Bearer ${adminToken ? adminToken : SB_KEY}`,
+    'Content-Type': 'application/json',
+    Prefer: 'return=representation'
+  };
+}
 
 async function sbGet(table, qs = '') {
-  const r = await fetch(`${SB_URL}/rest/v1/${table}?${qs}`, { headers });
+  const r = await fetch(`${SB_URL}/rest/v1/${table}?${qs}`, { headers: getHeaders() });
   return r.json();
 }
 async function sbPost(table, data) {
   const r = await fetch(`${SB_URL}/rest/v1/${table}`, {
     method: 'POST',
-    headers: { ...headers, Prefer: 'return=representation' },
+    headers: getHeaders(),
     body: JSON.stringify(data)
   });
   return r.json();
@@ -31,40 +53,75 @@ async function sbPost(table, data) {
 async function sbPatch(table, id, data) {
   await fetch(`${SB_URL}/rest/v1/${table}?id=eq.${id}`, {
     method: 'PATCH',
-    headers: { ...headers, Prefer: 'return=representation' },
+    headers: getHeaders(),
     body: JSON.stringify(data)
   });
 }
 async function sbDelete(table, id) {
-  await fetch(`${SB_URL}/rest/v1/${table}?id=eq.${id}`, { method: 'DELETE', headers });
+  await fetch(`${SB_URL}/rest/v1/${table}?id=eq.${id}`, { method: 'DELETE', headers: getHeaders() });
 }
 async function sbDeleteWhere(table, filter) {
-  await fetch(`${SB_URL}/rest/v1/${table}?${filter}`, { method: 'DELETE', headers });
+  await fetch(`${SB_URL}/rest/v1/${table}?${filter}`, { method: 'DELETE', headers: getHeaders() });
 }
 
 /* ── LOGIN ─────────────────────────────────────── */
-function doLogin() {
-  if (document.getElementById('pwd-input').value === PASSWORD) {
-    document.getElementById('login-screen').style.display = 'none';
-    document.getElementById('admin-panel').style.display  = 'block';
-    initAdmin();
-  } else {
-    document.getElementById('login-error').style.display = 'block';
-    document.getElementById('pwd-input').value = '';
-    document.getElementById('pwd-input').focus();
+async function doLogin() {
+  const email = document.getElementById('email-input').value.trim();
+  const password = document.getElementById('pwd-input').value;
+  const errorEl = document.getElementById('login-error');
+  const btn = document.querySelector('.login-btn');
+
+  if (!email || !password) return;
+
+  btn.textContent = 'CARGANDO...';
+  btn.disabled = true;
+
+  try {
+    const res = await fetch(`${SB_URL}/auth/v1/token?grant_type=password`, {
+      method: 'POST',
+      headers: { apikey: SB_KEY, 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email, password })
+    });
+    const data = await res.json();
+
+    if (data.error) {
+      errorEl.textContent = 'Credenciales incorrectas';
+      errorEl.style.display = 'block';
+    } else {
+      // Login exitoso: Guardar token
+      localStorage.setItem('nahuel_admin_token', data.access_token);
+      errorEl.style.display = 'none';
+      document.getElementById('login-screen').style.display = 'none';
+      document.getElementById('admin-panel').style.display  = 'block';
+      initAdmin();
+    }
+  } catch (err) {
+    errorEl.textContent = 'Error de red';
+    errorEl.style.display = 'block';
   }
+
+  btn.textContent = 'INGRESAR';
+  btn.disabled = false;
 }
+
 function doLogout() {
+  localStorage.removeItem('nahuel_admin_token');
   document.getElementById('admin-panel').style.display  = 'none';
   document.getElementById('login-screen').style.display = 'flex';
   document.getElementById('pwd-input').value = '';
   document.getElementById('login-error').style.display = 'none';
 }
 
+
 /* ── TABS ───────────────────────────────────────── */
 function switchTab(tab) {
   ['turnos', 'bloqueos', 'exportar'].forEach(t => {
-    document.getElementById('tab-' + t).style.display = t === tab ? 'block' : 'none';
+    const el = document.getElementById('tab-' + t);
+    if (t === tab) {
+      el.classList.remove('hidden');
+    } else {
+      el.classList.add('hidden');
+    }
   });
   document.querySelectorAll('.tab-btn').forEach((btn, i) => {
     btn.classList.toggle('active', ['turnos', 'bloqueos', 'exportar'][i] === tab);
@@ -77,6 +134,11 @@ async function initAdmin() {
   await renderStats();
   await renderTurnos();
   initBlockForm();
+  // Auto-refresh silencioso cada 30 segundos
+  setInterval(async () => {
+    await renderStats();
+    await renderTurnos();
+  }, 30000);
 }
 
 /* ── STATS ──────────────────────────────────────── */
@@ -193,7 +255,7 @@ function renderCalendar() {
       bks.forEach(b => {
         html += `<div class="cal-card cal-card-${b.sport}" onclick="openEditModal('${b.id}')" title="${b.name} · ${b.court}">
           <span class="cal-card-court">${b.court.replace('Cancha ', '')}</span>
-          <span class="cal-card-name">${b.name.split(' ')[0]}</span>
+          <span class="cal-card-name">${escapeHTML(b.name.split(' ')[0])}</span>
         </div>`;
       });
       html += `</div>`;
@@ -248,8 +310,8 @@ function filterAndRenderTurnos() {
       <span style="font-size:13px;text-transform:capitalize">${dt}</span>
       <span><span class="pill pill-${b.sport}">${s.name}</span></span>
       <span style="font-size:13px;color:var(--muted)">${b.court}</span>
-      <span style="font-size:14px;font-weight:600">${b.name}</span>
-      <span class="hide-mobile" style="font-size:13px;color:var(--muted)">${b.phone || ''}</span>
+      <span style="font-size:14px;font-weight:600">${escapeHTML(b.name)}</span>
+      <span class="hide-mobile" style="font-size:13px;color:var(--muted)">${escapeHTML(b.phone || '')}</span>
       <span style="display:flex;gap:6px">
         <button class="icon-btn edit"   onclick="openEditModal('${b.id}')" title="Editar">✏️</button>
         <button class="icon-btn delete" onclick="deleteBooking('${b.id}')" title="Eliminar">🗑</button>

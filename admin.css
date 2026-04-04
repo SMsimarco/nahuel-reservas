@@ -941,3 +941,13 @@ body {
   .filter-hour-group { width: 100%; display: flex; gap: 8px; }
   .filter-hour-group .filter-select { flex: 1; }
 }
+/* ── UTILITIES ADMIN ── */
+.hidden { display: none; }
+.flex-row-gap { display: flex; gap: 10px; flex-wrap: wrap; }
+.flex-1 { flex: 1; }
+.whitespace-nowrap { white-space: nowrap; }
+.mt-20 { margin-top: 20px; }
+.admin-header-row { display: flex; align-items: center; margin-bottom: 16px; gap: 12px; flex-wrap: wrap; }
+.admin-title-flex { margin-bottom: 0; flex: 1; min-width: 120px; }
+.search-input { min-width: 180px; }
+.cols-bloqueos { grid-template-columns: 80px 120px 1fr 1fr 60px; }

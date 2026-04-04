@@ -1,172 +1,180 @@
 <!DOCTYPE html>
 <html lang="es">
+
 <head>
-  <meta charset="UTF-8"/>
-  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Admin · Club Nahuel</title>
-  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Outfit:wght@400;500;600;700&display=swap" rel="stylesheet"/>
-  <link rel="stylesheet" href="admin.css"/>
+  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Outfit:wght@400;500;600;700&display=swap"
+    rel="stylesheet" />
+  <link rel="stylesheet" href="admin.css" />
 </head>
 <body>
-
-<!-- ══ LOGIN ══════════════════════════════════════ -->
-<div id="login-screen">
-  <div class="login-box">
-    <img class="login-logo" src="Logo_Nahuel.png" alt="Club Nahuel"/>
-    <div class="login-title">Panel de Administración</div>
-    <div class="login-sub">Ingresá la contraseña para continuar</div>
-    <input class="login-input" id="pwd-input" type="password" placeholder="••••••••"
-      onkeydown="if(event.key==='Enter') doLogin()"/>
-    <button class="login-btn" onclick="doLogin()">INGRESAR</button>
-    <div class="login-error" id="login-error">Contraseña incorrecta</div>
-  </div>
-</div>
-
-<!-- ══ PANEL ═══════════════════════════════════════ -->
-<div id="admin-panel">
-
-  <div class="admin-navbar">
-    <div class="admin-navbar-left">
-      <img class="admin-logo" src="Logo_Nahuel.png" alt="Club Nahuel"/>
-      <span class="admin-badge">Admin</span>
+  <!-- ══ LOGIN ══════════════════════════════════════ -->
+  <div id="login-screen">
+    <div class="login-box">
+      <img class="login-logo" src="Logo_Nahuel.png" alt="Club Nahuel" />
+      <div class="login-title">Panel de Administración</div>
+      <div class="login-sub">Ingresá tus credenciales para continuar</div>
+      <input class="login-input" id="email-input" type="email" placeholder="admin@clubnahuel.com" />
+      <input class="login-input" id="pwd-input" type="password" placeholder="••••••••"
+        onkeydown="if(event.key==='Enter') doLogin()" />
+      <button class="login-btn" onclick="doLogin()">INGRESAR</button>
+      <div class="login-error" id="login-error">Credenciales incorrectas</div>
     </div>
-    <button class="logout-btn" onclick="doLogout()">Cerrar sesión</button>
   </div>
 
-  <div class="tabs">
-    <button class="tab-btn active" onclick="switchTab('turnos')">📋 Turnos</button>
-    <button class="tab-btn" onclick="switchTab('bloqueos')">🚫 Bloqueos</button>
-    <button class="tab-btn" onclick="switchTab('exportar')">📤 Exportar</button>
-  </div>
-
-  <!-- TAB TURNOS -->
-  <div id="tab-turnos" class="admin-content">
-    <div class="stats-grid" id="stats-grid"></div>
-    <div style="display:flex;align-items:center;margin-bottom:16px;gap:12px;flex-wrap:wrap">
-      <div class="section-title" style="margin-bottom:0;flex:1;min-width:120px">Reservas</div>
-      <div class="view-toggle">
-        <button class="view-btn active" id="btn-vista-lista" onclick="switchView('lista')">☰ Lista</button>
-        <button class="view-btn" id="btn-vista-cal" onclick="switchView('calendario')">📅 Semana</button>
+  <!-- ══ PANEL ═══════════════════════════════════════ -->
+  <div id="admin-panel">
+    <div class="admin-navbar">
+      <div class="admin-navbar-left">
+        <img class="admin-logo" src="Logo_Nahuel.png" alt="Club Nahuel" />
+        <span class="admin-badge">Admin</span>
       </div>
-    </div>
-    <div class="filter-bar">
-      <span class="filter-label">Filtrar:</span>
-      <select class="filter-select" id="filter-sport">
-        <option value="">Todos los deportes</option>
-        <option value="padel">Pádel</option>
-        <option value="futbol">Fútbol</option>
-      </select>
-      <select class="filter-select" id="filter-period">
-        <option value="today">Hoy</option>
-        <option value="week">Esta semana</option>
-        <option value="all">Todos</option>
-      </select>
-      <input class="filter-input" id="filter-search" type="text" placeholder="Buscar nombre..." style="min-width:180px"/>
-      <div class="filter-hour-group">
-        <select class="filter-select" id="filter-hour-from">
-          <option value="">Desde</option>
-        </select>
-        <select class="filter-select" id="filter-hour-to">
-          <option value="">Hasta</option>
-        </select>
-      </div>
+      <button class="logout-btn" onclick="doLogout()">Cerrar sesión</button>
     </div>
 
-    <!-- VISTA LISTA -->
-    <div id="view-lista">
-      <div id="turnos-count"></div>
-      <div class="table-wrap">
-        <div class="table-header cols-bookings">
-          <span>Hora</span><span>Fecha</span><span>Deporte</span>
-          <span>Cancha</span><span>Titular</span>
-          <span class="hide-mobile">Teléfono</span><span></span>
+    <div class="tabs">
+      <button class="tab-btn active" onclick="switchTab('turnos')">📋 Turnos</button>
+      <button class="tab-btn" onclick="switchTab('bloqueos')">🚫 Bloqueos</button>
+      <button class="tab-btn" onclick="switchTab('exportar')">📤 Exportar</button>
+    </div>
+
+    <!-- TAB TURNOS -->
+    <div id="tab-turnos" class="admin-content">
+      <div class="stats-grid" id="stats-grid"></div>
+      <div class="admin-header-row">
+        <div class="section-title admin-title-flex">Reservas</div>
+        <div class="view-toggle">
+          <button class="view-btn active" id="btn-vista-lista" onclick="switchView('lista')">☰ Lista</button>
+          <button class="view-btn" id="btn-vista-cal" onclick="switchView('calendario')">📅 Semana</button>
         </div>
-        <div id="turnos-body"><div class="loading">Cargando...</div></div>
       </div>
-    </div>
-
-    <!-- VISTA CALENDARIO -->
-    <div id="view-calendario" style="display:none">
-      <div class="cal-nav">
-        <button class="cal-nav-btn" onclick="moveCalendar(-1)">&#8592;</button>
-        <span class="cal-week-label" id="cal-week-label"></span>
-        <button class="cal-nav-btn" onclick="moveCalendar(1)">&#8594;</button>
-        <button class="cal-today-btn" onclick="goCalendarToday()">Hoy</button>
-      </div>
-      <div class="cal-wrap">
-        <div class="cal-grid" id="cal-grid"></div>
-      </div>
-    </div>
-  </div>
-
-  <!-- TAB BLOQUEOS -->
-  <div id="tab-bloqueos" class="admin-content" style="display:none">
-    <div class="section-title">Bloquear horario</div>
-    <div class="block-form">
-      <div>
-        <label>Deporte</label>
-        <select id="bl-sport" onchange="updateCourtSelect()">
+      <div class="filter-bar">
+        <span class="filter-label">Filtrar:</span>
+        <select class="filter-select" id="filter-sport">
+          <option value="">Todos los deportes</option>
           <option value="padel">Pádel</option>
           <option value="futbol">Fútbol</option>
         </select>
+        <select class="filter-select" id="filter-period">
+          <option value="today">Hoy</option>
+          <option value="week">Esta semana</option>
+          <option value="all">Todos</option>
+        </select>
+        <input class="filter-input search-input" id="filter-search" type="text" placeholder="Buscar nombre..."/>
+        <div class="filter-hour-group">
+          <select class="filter-select" id="filter-hour-from">
+            <option value="">Desde</option>
+          </select>
+          <select class="filter-select" id="filter-hour-to">
+            <option value="">Hasta</option>
+          </select>
+        </div>
       </div>
-      <div><label>Cancha</label><select id="bl-court"></select></div>
-      <div><label>Fecha</label><input type="date" id="bl-date"/></div>
-      <div><label>Horario</label><select id="bl-time"></select></div>
-      <button class="btn-orange" onclick="addBlock()">BLOQUEAR</button>
+
+      <!-- VISTA LISTA -->
+      <div id="view-lista">
+        <div id="turnos-count"></div>
+        <div class="table-wrap">
+          <div class="table-header cols-bookings">
+            <span>Hora</span><span>Fecha</span><span>Deporte</span>
+            <span>Cancha</span><span>Titular</span>
+            <span class="hide-mobile">Teléfono</span><span></span>
+          </div>
+          <div id="turnos-body">
+            <div class="loading">Cargando...</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- VISTA CALENDARIO -->
+     <div id="view-calendario" class="hidden">
+        <div class="cal-nav">
+          <button class="cal-nav-btn" onclick="moveCalendar(-1)">&#8592;</button>
+          <span class="cal-week-label" id="cal-week-label"></span>
+          <button class="cal-nav-btn" onclick="moveCalendar(1)">&#8594;</button>
+          <button class="cal-today-btn" onclick="goCalendarToday()">Hoy</button>
+        </div>
+        <div class="cal-wrap">
+          <div class="cal-grid" id="cal-grid"></div>
+        </div>
+      </div>
     </div>
-    <div class="section-title">Horarios bloqueados</div>
-    <div class="table-wrap">
-      <div class="table-header" style="grid-template-columns:80px 120px 1fr 1fr 60px">
-        <span>Hora</span><span>Fecha</span><span>Deporte</span><span>Cancha</span><span></span>
+
+    <!-- TAB BLOQUEOS -->
+    <div id="tab-bloqueos" class="admin-content hidden">
+      <div class="section-title">Bloquear horario</div>
+      <div class="block-form">
+        <div>
+          <label>Deporte</label>
+          <select id="bl-sport" onchange="updateCourtSelect()">
+            <option value="padel">Pádel</option>
+            <option value="futbol">Fútbol</option>
+          </select>
+        </div>
+        <div><label>Cancha</label><select id="bl-court"></select></div>
+        <div><label>Fecha</label><input type="date" id="bl-date" /></div>
+        <div><label>Horario</label><select id="bl-time"></select></div>
+        <button class="btn-orange flex-1" onclick="addBlock()">BLOQUEAR</button>
       </div>
-      <div id="bloqueos-body"><div class="loading">Cargando...</div></div>
+      <div class="section-title">Horarios bloqueados</div>
+      <div class="table-wrap">
+        <div class="table-header cols-bloqueos">
+          <span>Hora</span><span>Fecha</span><span>Deporte</span><span>Cancha</span><span></span>
+        </div>
+        <div id="bloqueos-body">
+          <div class="loading">Cargando...</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- TAB EXPORTAR -->
+    <div id="tab-exportar" class="admin-content hidden">
+      <div class="section-title">Exportar reservas</div>
+      <div class="export-card">
+        <div class="export-card-title">Exportar como CSV</div>
+        <div class="export-card-sub">Descargá todas las reservas en formato CSV. Podés abrirlo con Excel o Google
+          Sheets.</div>
+        <div class="flex-row-gap">
+          <button class="btn-orange flex-1" onclick="exportCSV('all')">EXPORTAR TODAS</button>
+          <button class="export-btn flex-1 whitespace-nowrap" onclick="exportCSV('today')">SOLO HOY</button>
+        </div>
+      </div>
+      <div class="export-card mt-20">
+        <div class="export-card-title">Zona peligrosa</div>
+        <div class="export-card-sub">Borrá todas las reservas pasadas para limpiar el historial.</div>
+        <button class="btn-danger" onclick="clearPast()">Eliminar reservas pasadas</button>
+      </div>
+    </div>
+
+  </div><!-- fin admin-panel -->
+
+  <!-- ══ MODAL EDITAR ════════════════════════════════ -->
+  <div id="edit-modal" class="modal-overlay hidden" onclick="closeModal(event)">
+    <div class="modal-box">
+      <div class="modal-title">Editar reserva</div>
+      <div class="modal-field">
+        <label class="modal-label">Nombre</label>
+        <input class="modal-input" id="edit-name" />
+      </div>
+      <div class="modal-field">
+        <label class="modal-label">Teléfono</label>
+        <input class="modal-input" id="edit-phone" type="tel" />
+      </div>
+      <div class="modal-field">
+        <label class="modal-label">Horario</label>
+        <select class="modal-input" id="edit-time"></select>
+      </div>
+      <div class="modal-btns">
+        <button class="modal-cancel"
+          onclick="document.getElementById('edit-modal').style.display='none'">Cancelar</button>
+        <button class="modal-save" onclick="saveEdit()">GUARDAR</button>
+      </div>
     </div>
   </div>
 
-  <!-- TAB EXPORTAR -->
-  <div id="tab-exportar" class="admin-content" style="display:none">
-    <div class="section-title">Exportar reservas</div>
-    <div class="export-card">
-      <div class="export-card-title">Exportar como CSV</div>
-      <div class="export-card-sub">Descargá todas las reservas en formato CSV. Podés abrirlo con Excel o Google Sheets.</div>
-      <div style="display:flex;gap:10px;flex-wrap:wrap">
-        <button class="btn-orange" onclick="exportCSV('all')" style="flex:1">EXPORTAR TODAS</button>
-        <button class="export-btn" onclick="exportCSV('today')" style="flex:1;white-space:nowrap">SOLO HOY</button>
-      </div>
-    </div>
-    <div class="export-card" style="margin-top:20px">
-      <div class="export-card-title">Zona peligrosa</div>
-      <div class="export-card-sub">Borrá todas las reservas pasadas para limpiar el historial.</div>
-      <button class="btn-danger" onclick="clearPast()">Eliminar reservas pasadas</button>
-    </div>
-  </div>
-
-</div><!-- fin admin-panel -->
-
-<!-- ══ MODAL EDITAR ════════════════════════════════ -->
-<div id="edit-modal" class="modal-overlay" style="display:none" onclick="closeModal(event)">
-  <div class="modal-box">
-    <div class="modal-title">Editar reserva</div>
-    <div class="modal-field">
-      <label class="modal-label">Nombre</label>
-      <input class="modal-input" id="edit-name"/>
-    </div>
-    <div class="modal-field">
-      <label class="modal-label">Teléfono</label>
-      <input class="modal-input" id="edit-phone" type="tel"/>
-    </div>
-    <div class="modal-field">
-      <label class="modal-label">Horario</label>
-      <select class="modal-input" id="edit-time"></select>
-    </div>
-    <div class="modal-btns">
-      <button class="modal-cancel" onclick="document.getElementById('edit-modal').style.display='none'">Cancelar</button>
-      <button class="modal-save" onclick="saveEdit()">GUARDAR</button>
-    </div>
-  </div>
-</div>
-
-<script src="admin.js"></script>
+  <script src="admin.js"></script>
 </body>
+
 </html>
