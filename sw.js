@@ -1,4 +1,4 @@
-const CACHE = 'nahuel-v1';
+const CACHE = 'nahuel-v3';
 const ASSETS = [
   '/index.html',
   '/style.css',

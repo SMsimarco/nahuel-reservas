@@ -3,6 +3,26 @@ const SB_URL = 'https://tzfnjozxvdnadaryyahy.supabase.co';
 const SB_KEY = 'sb_publishable_z6R0-d9ulf316kicFHFeAQ_Dw2cANhr';
 const sb     = supabase.createClient(SB_URL, SB_KEY);
 
+/* ── REGLAS DE NEGOCIO ───────────────────────────── */
+const CANCEL_LIMIT_HOURS = 2; // no se puede cancelar con menos de X horas
+
+/* ── SESSION MANAGEMENT ──────────────────────────── */
+// Mantener el token siempre fresco — Supabase lo renueva automáticamente
+sb.auth.onAuthStateChange((event, session) => {
+  if (session?.access_token) {
+    localStorage.setItem('nahuel_client_token', session.access_token);
+  } else if (event === 'SIGNED_OUT') {
+    localStorage.removeItem('nahuel_client_token');
+  }
+});
+
+// Al cargar la página, restaurar sesión activa si existe
+sb.auth.getSession().then(({ data }) => {
+  if (data.session?.access_token) {
+    localStorage.setItem('nahuel_client_token', data.session.access_token);
+  }
+});
+
 /* ── XSS PROTECTION ──────────────────────────────── */
 function escapeHTML(str) {
   if (typeof str !== 'string') return '';
@@ -31,8 +51,15 @@ function getClientHeaders() {
   };
 }
 
+function handleSessionExpired() {
+  localStorage.removeItem('nahuel_client_token');
+  showToast('Tu sesión expiró. Iniciá sesión de nuevo.', 'error');
+  setTimeout(() => goTo('view-login'), 1200);
+}
+
 async function sbGet(table, filters = '') {
   const res = await fetch(`${SB_URL}/rest/v1/${table}?${filters}`, { headers: getClientHeaders() });
+  if (res.status === 401) { handleSessionExpired(); return []; }
   return res.json();
 }
 
@@ -42,14 +69,16 @@ async function sbPost(table, data) {
     headers: getClientHeaders(),
     body: JSON.stringify(data)
   });
+  if (res.status === 401) { handleSessionExpired(); throw new Error('session_expired'); }
   return res.json();
 }
 
 async function sbDelete(table, id) {
-  await fetch(`${SB_URL}/rest/v1/${table}?id=eq.${id}`, {
+  const res = await fetch(`${SB_URL}/rest/v1/${table}?id=eq.${id}`, {
     method: 'DELETE',
     headers: getClientHeaders()
   });
+  if (res.status === 401) { handleSessionExpired(); }
 }
 
 /* ── DATA ─────────────────────────────────────────── */
@@ -321,8 +350,26 @@ async function confirmBooking() {
   const email = document.getElementById('inp-email') ? document.getElementById('inp-email').value.trim() : '';
   if (!name || !phone) return;
 
-  const btn       = document.getElementById('btn-confirm');
-  btn.disabled    = true;
+  const btn    = document.getElementById('btn-confirm');
+  btn.disabled = true;
+
+  // Verificar disponibilidad en tiempo real antes de guardar
+  btn.textContent = 'VERIFICANDO...';
+  try {
+    const check = await sbGet('bookings',
+      `sport=eq.${currentSport}&court=eq.${encodeURIComponent(pendingSlot.court)}&date=eq.${fmt(selectedDate)}&time=eq.${pendingSlot.time}&select=id`
+    );
+    if (Array.isArray(check) && check.length > 0) {
+      showToast('Ese turno acaba de ser reservado. Elegí otro.', 'error');
+      await loadAll();
+      renderGrid();
+      goTo('view-grid');
+      btn.disabled    = false;
+      btn.textContent = 'CONFIRMAR RESERVA';
+      return;
+    }
+  } catch { /* si falla el check igual intentamos */ }
+
   btn.textContent = 'GUARDANDO...';
 
   const bk = {
@@ -336,23 +383,32 @@ async function confirmBooking() {
   };
 
   try {
-    await sbPost('bookings', bk);
+    const result = await sbPost('bookings', bk);
+
+    // Doble reserva detectada por constraint de la DB
+    if (result?.code === '23505') {
+      showToast('Ese turno acaba de ser tomado por otra persona. Elegí otro.', 'error');
+      await loadAll();
+      renderGrid();
+      goTo('view-grid');
+      btn.disabled    = false;
+      btn.textContent = 'CONFIRMAR RESERVA';
+      return;
+    }
+
     bookings.push(bk);
     lastBooking = bk;
-
-    // Guardar perfil para pre-rellenar próximas reservas
     localStorage.setItem('nahuel_user_profile', JSON.stringify({ name, phone, email }));
-
-    // Haptic feedback en mobile
     if (navigator.vibrate) navigator.vibrate(60);
-
     renderConfirm(bk);
     goTo('view-ok');
     updateHomeCount();
   } catch (e) {
-    showToast('Error al guardar la reserva. Intentá de nuevo.', 'error');
-    btn.disabled    = false;
-    btn.textContent = 'CONFIRMAR RESERVA';
+    if (e.message !== 'session_expired') {
+      showToast('Error al guardar la reserva. Intentá de nuevo.', 'error');
+      btn.disabled    = false;
+      btn.textContent = 'CONFIRMAR RESERVA';
+    }
   }
 }
 
@@ -449,6 +505,14 @@ function bkCard(b, isPast) {
 }
 
 function askCancel(id) {
+  const bk = bookings.find(b => b.id === id);
+  if (bk) {
+    const hoursUntil = (new Date(`${bk.date}T${bk.time}:00`) - new Date()) / 3600000;
+    if (hoursUntil < CANCEL_LIMIT_HOURS) {
+      showToast(`No se puede cancelar con menos de ${CANCEL_LIMIT_HOURS} hs de anticipación.`, 'error');
+      return;
+    }
+  }
   document.getElementById(`cancel-wrap-${id}`).innerHTML =
     `<div class="cancel-confirm">
       <div class="cancel-ask">¿Cancelar?</div>
