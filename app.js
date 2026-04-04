@@ -492,9 +492,10 @@ async function sendOTP() {
 }
 
 async function verifyOTP() {
-  const token = document.getElementById('client-otp').value.trim();
-  if (!token || token.length !== 8) {
-    document.getElementById('login-msg').textContent = 'Ingresá el código de 8 dígitos.';
+  // Limpiar espacios y caracteres no numéricos que el teclado mobile puede agregar
+  const token = document.getElementById('client-otp').value.replace(/\D/g, '').trim();
+  if (!token) {
+    document.getElementById('login-msg').textContent = 'Ingresá el código que llegó al correo.';
     return;
   }
 
@@ -529,7 +530,8 @@ async function verifyOTP() {
     }
     showToast('¡Sesión iniciada!');
   } else {
-    document.getElementById('login-msg').textContent = 'Código incorrecto o expirado.';
+    const errMsg = data.error_description || data.msg || 'Código incorrecto o expirado.';
+    document.getElementById('login-msg').textContent = errMsg;
   }
 }
 

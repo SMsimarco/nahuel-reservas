@@ -149,7 +149,7 @@
 
     <div id="login-step-2" class="hidden">
       <label class="field-label">Código de 8 dígitos</label>
-      <input class="field-input" id="client-otp" type="text" placeholder="12345678" inputmode="numeric" maxlength="8" />
+      <input class="field-input" id="client-otp" type="text" placeholder="12345678" inputmode="numeric" maxlength="12" autocomplete="one-time-code" />
       <button class="btn-primary green" onclick="verifyOTP()">VERIFICAR Y ENTRAR</button>
       <button class="btn-primary outline mt-4" onclick="resetLogin()">Usar otro correo</button>
     </div>
