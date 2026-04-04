@@ -493,8 +493,8 @@ async function sendOTP() {
 
 async function verifyOTP() {
   const token = document.getElementById('client-otp').value.trim();
-  if (!token || token.length !== 6) {
-    document.getElementById('login-msg').textContent = 'Ingresá el código de 6 dígitos.';
+  if (!token || token.length !== 8) {
+    document.getElementById('login-msg').textContent = 'Ingresá el código de 8 dígitos.';
     return;
   }
 
