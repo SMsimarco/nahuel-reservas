@@ -25,11 +25,12 @@
   </div>
 
   <!-- ══ PANEL ═══════════════════════════════════════ -->
-  <div id="admin-panel">
+  <div id="admin-panel" style="display:none">
     <div class="admin-navbar">
       <div class="admin-navbar-left">
         <img class="admin-logo" src="Logo_Nahuel.png" alt="Club Nahuel" />
         <span class="admin-badge">Admin</span>
+        <span class="live-dot" id="live-dot" title="Actualizando cada 30s"></span>
       </div>
       <button class="logout-btn" onclick="doLogout()">Cerrar sesión</button>
     </div>
@@ -174,6 +175,7 @@
     </div>
   </div>
 
+  <div id="admin-toast" class="toast"></div>
   <script src="admin.js"></script>
 </body>
 

@@ -1310,6 +1310,44 @@ body {
   letter-spacing: .3px;
   min-height: 20px;
 }
-.avail-badge.green  { background: var(--glight);    color: var(--gtext); }
-.avail-badge.orange { background: #FFF3E0;           color: #B45309; }
+.avail-badge.green  { background: var(--glight);   color: var(--gtext); }
+.avail-badge.orange { background: #FFF3E0;          color: #B45309; }
 .avail-badge.red    { background: var(--redlight);  color: var(--red); }
+
+/* ── ESTADO ABIERTO/CERRADO ──────────────────────── */
+.club-status-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 0 14px;
+  border-bottom: 1px solid var(--gray);
+  margin-bottom: 4px;
+}
+.club-dot {
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+.club-dot.open   { background: var(--gbright); box-shadow: 0 0 0 3px rgba(45,181,96,.2); animation: clubPulse 2s ease infinite; }
+.club-dot.closed { background: var(--muted); }
+@keyframes clubPulse {
+  0%, 100% { box-shadow: 0 0 0 3px rgba(45,181,96,.2); }
+  50%       { box-shadow: 0 0 0 6px rgba(45,181,96,.05); }
+}
+.club-status-text        { font-size: 13px; font-weight: 700; }
+.club-status-text.open   { color: var(--gtext); }
+.club-status-text.closed { color: var(--muted); }
+
+/* ── COUNTDOWN EN RESERVAS ───────────────────────── */
+.bk-countdown {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: .5px;
+  padding: 3px 8px;
+  border-radius: 20px;
+  text-transform: uppercase;
+}
+.badge-hoy    { background: var(--glight);   color: var(--gtext); }
+.badge-manana { background: var(--bluelight); color: var(--blue); }
+.badge-pronto { background: var(--gray);      color: var(--muted); }

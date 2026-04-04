@@ -85,13 +85,14 @@ async function loadAll() {
   updateHomeCount();
 }
 loadAll();
+updateClubStatus();
 
 /* ── ROUTING ─────────────────────────────────────── */
 function goTo(id) {
   document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
   document.getElementById(id).classList.add('active');
   window.scrollTo(0, 0);
-  if (id === 'view-home')       updateHomeCount();
+  if (id === 'view-home')       { updateHomeCount(); updateClubStatus(); }
   if (id === 'view-mis-turnos') renderBookings();
 }
 
@@ -424,15 +425,17 @@ async function renderBookings() {
 }
 
 function bkCard(b, isPast) {
-  const s  = SPORTS[b.sport];
-  const dt = new Date(b.date + 'T12:00:00').toLocaleDateString('es-AR', { weekday: 'long', day: 'numeric', month: 'long' });
+  const s       = SPORTS[b.sport];
+  const dt      = new Date(b.date + 'T12:00:00').toLocaleDateString('es-AR', { weekday: 'long', day: 'numeric', month: 'long' });
+  const countdown = !isPast ? daysUntil(b.date) : null;
   return `<div class="booking-card ${b.sport}${isPast ? ' past' : ''}" id="bk-${b.id}">
     <div class="bk-top">
       <div style="flex:1">
-        <div style="display:flex;align-items:center;gap:4px;margin-bottom:5px">
+        <div style="display:flex;align-items:center;gap:6px;margin-bottom:5px;flex-wrap:wrap">
           <span class="bk-sport">${s.name}</span>
           <span class="bk-court">· ${b.court}</span>
           ${isPast ? '<span class="bk-badge">Finalizado</span>' : ''}
+          ${countdown ? `<span class="bk-countdown ${countdown.cls}">${countdown.label}</span>` : ''}
         </div>
         <div class="bk-date">${dt}</div>
         <div class="bk-meta">${b.time} · ${s.duration} min · ${escapeHTML(b.name)} · ${escapeHTML(b.phone)}</div>
@@ -535,6 +538,38 @@ function resetLogin() {
   document.getElementById('login-step-1').classList.remove('hidden');
   document.getElementById('login-step-2').classList.add('hidden');
   document.getElementById('login-msg').textContent = '';
+}
+
+/* ── ESTADO DEL CLUB ─────────────────────────────── */
+function isClubOpen() {
+  const now = new Date();
+  const day = now.getDay(); // 0=Dom, 6=Sáb
+  const h   = now.getHours() + now.getMinutes() / 60;
+  if (day >= 1 && day <= 5) return h >= 8  && h < 22; // Lun–Vie
+  if (day === 6)             return h >= 8  && h < 20; // Sáb
+  if (day === 0)             return h >= 9  && h < 18; // Dom
+  return false;
+}
+
+function updateClubStatus() {
+  const dot  = document.getElementById('club-status-dot');
+  const text = document.getElementById('club-status-text');
+  if (!dot || !text) return;
+  const open = isClubOpen();
+  dot.className  = `club-dot ${open ? 'open' : 'closed'}`;
+  text.textContent = open ? 'Abierto ahora' : 'Cerrado ahora';
+  text.className = `club-status-text ${open ? 'open' : 'closed'}`;
+}
+
+/* ── DÍAS RESTANTES ──────────────────────────────── */
+function daysUntil(dateStr) {
+  const t    = new Date(); t.setHours(0, 0, 0, 0);
+  const d    = new Date(dateStr + 'T00:00:00');
+  const diff = Math.round((d - t) / 86400000);
+  if (diff === 0) return { label: 'HOY',     cls: 'badge-hoy' };
+  if (diff === 1) return { label: 'MAÑANA',  cls: 'badge-manana' };
+  if (diff <= 7)  return { label: `en ${diff} días`, cls: 'badge-pronto' };
+  return null;
 }
 
 /* ── AUTH ────────────────────────────────────────── */

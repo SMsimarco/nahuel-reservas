@@ -1,3 +1,12 @@
+/* ── TOAST ───────────────────────────────────────── */
+function showToast(msg, type = 'success') {
+  const toast = document.getElementById('admin-toast');
+  toast.textContent = msg;
+  toast.className = `toast toast-${type} show`;
+  clearTimeout(toast._t);
+  toast._t = setTimeout(() => toast.classList.remove('show'), 3200);
+}
+
 /* ── CONFIG ─────────────────────────────────────── */
 const SB_URL   = 'https://tzfnjozxvdnadaryyahy.supabase.co';
 const SB_KEY   = 'sb_publishable_z6R0-d9ulf316kicFHFeAQ_Dw2cANhr';
@@ -134,10 +143,13 @@ async function initAdmin() {
   await renderStats();
   await renderTurnos();
   initBlockForm();
-  // Auto-refresh silencioso cada 30 segundos
+  // Auto-refresh silencioso cada 30 segundos con pulso visual
   setInterval(async () => {
+    const dot = document.getElementById('live-dot');
+    if (dot) dot.classList.add('pulse');
     await renderStats();
     await renderTurnos();
+    if (dot) setTimeout(() => dot.classList.remove('pulse'), 800);
   }, 30000);
 }
 
@@ -321,6 +333,14 @@ function filterAndRenderTurnos() {
 }
 
 document.addEventListener('DOMContentLoaded', () => {
+  // Auto-login si ya hay sesión guardada
+  const token = localStorage.getItem('nahuel_admin_token');
+  if (token) {
+    document.getElementById('login-screen').style.display = 'none';
+    document.getElementById('admin-panel').style.display  = 'block';
+    initAdmin();
+  }
+
   // Poblar selects de rango horario
   const slotOptions = SLOTS.map(s => `<option value="${s}">${s}</option>`).join('');
   document.getElementById('filter-hour-from').innerHTML += slotOptions;
@@ -344,6 +364,7 @@ async function deleteBooking(id) {
   allBookings = allBookings.filter(b => b.id !== id);
   filterAndRenderTurnos();
   renderStats();
+  showToast('Turno eliminado');
 }
 
 /* ── EDIT MODAL ─────────────────────────────────── */
@@ -409,9 +430,10 @@ async function addBlock() {
   const court = document.getElementById('bl-court').value;
   const date  = document.getElementById('bl-date').value;
   const time  = document.getElementById('bl-time').value;
-  if (!date) { alert('Seleccioná una fecha'); return; }
-  await sbPost('blocks', { id: Date.now().toString(), sport, court, date, time });
+  if (!date) { showToast('Seleccioná una fecha', 'error'); return; }
+  await sbPost('blocks', { id: crypto.randomUUID(), sport, court, date, time });
   renderBloqueos();
+  showToast('Horario bloqueado');
 }
 
 async function renderBloqueos() {
@@ -438,6 +460,7 @@ async function deleteBlock(id) {
   if (!confirm('¿Quitás el bloqueo?')) return;
   await sbDelete('blocks', id);
   renderBloqueos();
+  showToast('Bloqueo eliminado');
 }
 
 /* ── EXPORT ─────────────────────────────────────── */
@@ -460,6 +483,7 @@ async function exportCSV(mode) {
   const a    = document.createElement('a');
   a.href = url; a.download = `nahuel-reservas-${today()}.csv`; a.click();
   URL.revokeObjectURL(url);
+  showToast(`CSV descargado · ${bks.length} reservas`);
 }
 
 async function clearPast() {
@@ -469,5 +493,5 @@ async function clearPast() {
   await sbDeleteWhere('bookings', `date=lt.${today()}`);
   renderStats();
   renderTurnos();
-  alert('Reservas pasadas eliminadas.');
+  showToast('Reservas pasadas eliminadas');
 }

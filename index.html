@@ -4,6 +4,15 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Club Nahuel · Reservas</title>
+
+  <!-- PWA -->
+  <link rel="manifest" href="manifest.json" />
+  <meta name="theme-color" content="#080C09" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black" />
+  <meta name="apple-mobile-web-app-title" content="Nahuel" />
+  <link rel="apple-touch-icon" href="Logo_Nahuel.png" />
+
   <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Outfit:wght@400;500;600;700&display=swap"
     rel="stylesheet" />
   <link rel="stylesheet" href="style.css" />
@@ -84,6 +93,10 @@
 
       <div class="section-label mt-4">Horarios del club</div>
       <div class="horarios-card">
+        <div class="club-status-row">
+          <div id="club-status-dot" class="club-dot"></div>
+          <span id="club-status-text" class="club-status-text"></span>
+        </div>
         <div class="horarios-row"><span>Lun a Vie</span><span>08:00 – 22:00</span></div>
         <div class="horarios-row"><span>Sábados</span><span>08:00 – 20:00</span></div>
         <div class="horarios-row"><span>Domingos</span><span>09:00 – 18:00</span></div>
@@ -207,6 +220,11 @@
 
   <div id="toast" class="toast"></div>
   <script src="app.js"></script>
+  <script>
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.register('/sw.js');
+    }
+  </script>
 </body>
 
 </html>
